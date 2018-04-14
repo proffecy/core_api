@@ -4,7 +4,9 @@
     "require": {
         "php": "^7.0.8",
         "ext-iconv": "*",
+        "friendsofsymfony/rest-bundle": "^2.3",
         "sensio/framework-extra-bundle": "^5.1",
+        "symfony/apache-pack": "^1.0",
         "symfony/asset": "^3.4",
         "symfony/console": "^3.4",
         "symfony/expression-language": "^3.4",
@@ -72,9 +74,9 @@
     },
     "extra": {
         "symfony": {
-            "id": "",
+            "id": "01CB2FPSW6JXCN34APAE5PGB1K",
             "allow-contrib": false
         },
-        "symfony.id": "01CB1CSFZFJMRWEXE3V400KSKA"
+        "symfony.id": "01CB29KVFHSZWXJ3HGDY4H1K8P"
     }
 }
