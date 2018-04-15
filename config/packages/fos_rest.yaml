@@ -6,6 +6,8 @@ fos_rest:
     view:
         formats: { json: true, xml: false, rss: false }
         view_response_listener:  true
+        mime_types:
+            json: ['application/json']
     serializer:
         serialize_null: true
 #    exception:
@@ -16,3 +18,5 @@ fos_rest:
     format_listener:
         rules:
             - { path: ^/, prefer_extension: true, fallback_format: json, priorities: [ json, html ] }
+    body_converter:
+        enabled: true
