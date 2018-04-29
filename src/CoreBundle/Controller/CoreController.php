@@ -13,6 +13,8 @@ class CoreController extends Controller
 ############################################################################
     public function homeAction(Request $request)
     {
+       /* var_dump($request);*/
+
         $account_check = 0;
 
         $securityContext = $this->container->get('security.authorization_checker');
