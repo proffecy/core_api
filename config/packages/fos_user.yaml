@@ -1,7 +1,7 @@
 fos_user:
     db_driver: orm
-    firewall_name: main
+    firewall_name: api
     user_class: App\CoreBundle\Entity\User
     from_email:
-        address: "hello@youmail.com"
-        sender_name: "Sender Name"
+        address: "seb@proffecy.fr"
+        sender_name: "Contact Proffecy"

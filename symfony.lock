@@ -68,8 +68,17 @@
     "egulias/email-validator": {
         "version": "2.1.4"
     },
+    "exsyst/swagger": {
+        "version": "v0.4.0"
+    },
     "fig/link-util": {
         "version": "1.0.0"
+    },
+    "friendsofsymfony/oauth-server-bundle": {
+        "version": "1.6.1"
+    },
+    "friendsofsymfony/oauth2-php": {
+        "version": "1.2.3"
     },
     "friendsofsymfony/rest-bundle": {
         "version": "2.2",
@@ -106,6 +115,15 @@
     },
     "monolog/monolog": {
         "version": "1.23.0"
+    },
+    "nelmio/api-doc-bundle": {
+        "version": "3.0",
+        "recipe": {
+            "repo": "github.com/symfony/recipes-contrib",
+            "branch": "master",
+            "version": "3.0",
+            "ref": "9e11b09b3681b683efd33d270581fe7a281d7236"
+        }
     },
     "ocramius/proxy-manager": {
         "version": "2.0.4"
@@ -442,5 +460,8 @@
     },
     "zendframework/zend-eventmanager": {
         "version": "3.2.0"
+    },
+    "zircote/swagger-php": {
+        "version": "2.0.13"
     }
 }

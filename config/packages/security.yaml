@@ -1,34 +1,74 @@
-# app/config/security.yml
 security:
     encoders:
-        FOS\UserBundle\Model\UserInterface: bcrypt
-        # App\CoreBundle\Entity\User: sha512
-    providers:
-        main:
-            id: fos_user.user_provider.username
+        FOS\UserBundle\Model\UserInterface: sha512
 
+    providers:
+        fos_userbundle:
+            id: fos_user.user_provider.username        # fos_user.user_provider.username_email does not seem to work (OAuth-spec related ("username + password") ?)
     firewalls:
-        # disables authentication for assets and the profiler, adapt it according to your needs
-        dev:
-            pattern: ^/(_(profiler|wdt)|css|images|js)/
+        oauth_token:                                   # Everyone can access the access token URL.
+            pattern: ^/oauth/v2/token
             security: false
-        main:
-            pattern: ^/
-            anonymous: true
-            provider: main
+
+            # Add your favorite authentication process here
+        api:
+            pattern: ^/api(?!/doc)                     
+            fos_oauth: true                            # OAuth2 protected resource
+            stateless: true                            # Do no set session cookies
+            anonymous: false                           # Anonymous access is not allowed
             form_login:
                 login_path: fos_user_security_login
                 check_path: fos_user_security_check
-            form_login:
-#                 provider: fos_userbundle
-#                 csrf_provider: security.csrf.token_manager # Use form.csrf_provider instead for Symfony <2.4
-            logout:
-                path: fos_user_security_logout
-                target: /
-            remember_me:
-                secret: %kernel.secret%
+            logout:       true
+            anonymous:    true
+        doc:
+            pattern: ^/documentation
+            security: false
     access_control:
+        # URL of FOSUserBundle which need to be available to anonymous users
         - { path: ^/login$, role: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/register, role: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/resetting, role: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: ^/admin/, role: ROLE_ADMIN }
+
+        # Admin login page needs to be access without credential
+        - { path: ^/admin/login$, role: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/admin/logout$, role: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: ^/admin/login_check$, role: IS_AUTHENTICATED_ANONYMOUSLY }
+
+
+# app/config/security.yml
+# security:
+#     encoders:
+#         FOS\UserBundle\Model\UserInterface: sha512 # bcrypt
+#         # App\CoreBundle\Entity\User: sha512
+#     providers:
+#         main:
+#             id: fos_user.user_provider.username
+
+#     firewalls:
+#         # disables authentication for assets and the profiler, adapt it according to your needs
+#         dev:
+#             pattern: ^/(_(profiler|wdt)|css|images|js)/
+#             security: false
+#         main:
+#             pattern: ^/
+#             fos_oauth: true                            # OAuth2 protected resource
+#             stateless: true                            # Do no set session cookies
+#             anonymous: false                           # Anonymous access is not allowed
+#             provider: main
+#             form_login:
+#                 login_path: fos_user_security_login
+#                 check_path: fos_user_security_check
+#             form_login:
+# #                 provider: fos_userbundle
+# #                 csrf_provider: security.csrf.token_manager # Use form.csrf_provider instead for Symfony <2.4
+#             logout:
+#                 path: fos_user_security_logout
+#                 target: /
+#             remember_me:
+#                 secret: %kernel.secret%
+#     access_control:
+#         - { path: ^/login$, role: IS_AUTHENTICATED_ANONYMOUSLY }
+#         - { path: ^/register, role: IS_AUTHENTICATED_ANONYMOUSLY }
+#         - { path: ^/resetting, role: IS_AUTHENTICATED_ANONYMOUSLY }
+#         - { path: ^/admin/, role: ROLE_ADMIN }

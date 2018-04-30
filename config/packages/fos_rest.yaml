@@ -1,22 +1,32 @@
-# Read the documentation: https://symfony.com/doc/master/bundles/FOSRestBundle/index.html
 fos_rest:
-#    param_fetcher_listener:  true
-#    allowed_methods_listener:  true
-#    routing_loader: true
-    view:
-        formats: { json: true, xml: false, rss: false }
-        view_response_listener:  true
-        mime_types:
-            json: ['application/json']
-    serializer:
-        serialize_null: true
-#    exception:
-#        codes:
-#            App\Exception\MyException: 403
-#        messages:
-#            App\Exception\MyException: Forbidden area.
+    routing_loader:
+        default_format: json                            # All responses should be JSON formated
+        include_format: false                           # We do not include format in request, so that all responses
+
     format_listener:
         rules:
-            - { path: ^/, prefer_extension: true, fallback_format: json, priorities: [ json, html ] }
-    body_converter:
-        enabled: true
+            - { path: '^/', priorities: ['json'], fallback_format: 'json' }                # will eventually be JSON formated
+    view:
+        view_response_listener: true
+# # Read the documentation: https://symfony.com/doc/master/bundles/FOSRestBundle/index.html
+# fos_rest:
+# #    param_fetcher_listener:  true
+# #    allowed_methods_listener:  true
+#     routing_loader: true
+#     view:
+#         formats: { json: true, xml: false, rss: false }
+#         view_response_listener:  true
+#         mime_types:
+#             json: ['application/json']
+#     serializer:
+#         serialize_null: true
+# #    exception:
+# #        codes:
+# #            App\Exception\MyException: 403
+# #        messages:
+# #            App\Exception\MyException: Forbidden area.
+#     format_listener:
+#         rules:
+#             - { path: ^/, prefer_extension: true, fallback_format: json, priorities: [ json, html ] }
+#     body_converter:
+#         enabled: true
