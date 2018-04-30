@@ -23,10 +23,10 @@ http://s.wbrm/core_api/public/oauth/v2/token?grant_type=password@client_id=1_3bc
 	=> return bearer MzEwNGVjNjcwNTczODU5NzdiMWQ2NTdjMDVhYWM3MzU2YzViMmZmYWM5OTYyN2I5ODllZDQ1MTBjMTgxNGVhYQ
 
 ========================
-
+Then get
 QUERY protected by oauth
 http GET http://s.wbrm/core_api/public/home/2 \
-	"Authorization:Bearer MzEwNGVjNjcwNTczODU5NzdiMWQ2NTdjMDVhYWM3MzU2YzViMmZmYWM5OTYyN2I5ODllZDQ1MTBjMTgxNGVhYQ"
+	"Authorization:Bearer ZTg0YmRiZGViNmFkOWYyZDk4NmM5YzMxNGFiNDZhYzFjNjA5OGNjNDNjYmRlN2IzYmFiYzdhMzUxZTdjNjZiOQ"
 
 CHECK OAUTH IN CONTROLLER
 ------------------------

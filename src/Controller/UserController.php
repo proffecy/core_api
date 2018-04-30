@@ -1,11 +1,14 @@
 <?php
 
-namespace App\CoreBundle\Controller;
-
+namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Security\Core\Exception\TokenNotFoundException;
+use Symfony\Component\Security\Core\Exception\AuthenticationExpiredException;
 use FOS\RestBundle\Controller\Annotations\Route;
 use FOS\RestBundle\Controller\FOSRestController;
 use FOS\RestBundle\Controller\Annotations as Rest;
@@ -13,21 +16,14 @@ use FOS\RestBundle\Controller\Annotations\Get;
 use FOS\RestBundle\Controller\Annotations\Post;
 use FOS\RestBundle\Controller\Annotations\Put;
 use FOS\RestBundle\Controller\Annotations\View;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-//use FOS\RestBundle\Controller\FOSRestController as Controller;
-
-use Symfony\Component\Security\Core\Exception\TokenNotFoundException;
-use Symfony\Component\Security\Core\Exception\AuthenticationExpiredException;
 use FOS\OAuthServerBundle\Security\Authentication\Token\OAuthToken;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use App\CoreBundle\Entity\User;
-use App\CoreBundle\Entity\Client;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Nelmio\ApiDocBundle\Annotation\ApiDoc;
-use Doctrine\Common\Annotations\AnnotationRegistry;
+use App\Entity\User;
+use App\Entity\Client;
 
 
-class CoreController extends FOSRestController
+class UserController extends FOSRestController
 {
 
     /**
@@ -61,7 +57,7 @@ class CoreController extends FOSRestController
 
         );
         
-        //$users = $this->getDoctrine()->getRepository('CoreBundle:User')->findAll()
+        //$users = $this->getDoctrine()->getRepository('User')->findAll()
         
         $view = $this->view($data);
 
@@ -94,16 +90,24 @@ class CoreController extends FOSRestController
 
         // may want to validate something else about the client, but that is beyond OAuth2 scope
         
-        //$client = $accessToken->getClient();
-
+        $client = $accessToken->getClient();
+        
+        var_dump($client);
+        
         return null;
     }
 
 
-
+    
     /**
-    * @Route("/signup/{mail}/{username}/{pass}", requirements={"mail", "username", "pass"})
-    */
+     * @Get(
+     *     path = "/signup/{mail}/{username}/{pass}",
+     *     name = "app_signup",
+     *     requirements={"mail", "username", "pass"}
+     * )
+     * 
+     * @View(serializerGroups={"user"})
+     */
     public function signupAction(Request $request) {
         
         $array['mail'] = $request->get('mail');
@@ -118,6 +122,7 @@ class CoreController extends FOSRestController
         return $succesfullyRegistered;
    }
  
+
 
     private function register($email,$username,$password) {    
         
@@ -142,7 +147,6 @@ class CoreController extends FOSRestController
 
         $user->setRoles($roles);
 
-
         $user->setUsername($username);
 
         $user->setEmailCanonical($email);
@@ -152,7 +156,6 @@ class CoreController extends FOSRestController
         $user->setPlainPassword($password);
         
         $user->setEnabled(1);
-
 
         $entityManager = $this->getDoctrine()->getManager();
 

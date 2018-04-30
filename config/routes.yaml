@@ -1,3 +1,21 @@
+
+# FOSAuthServerBundle
+fos_oauth_server_token:
+    resource: "@FOSOAuthServerBundle/Resources/config/routing/token.xml"
+
+fos_oauth_server_authorize:
+    resource: "@FOSOAuthServerBundle/Resources/config/routing/authorize.xml"
+
+nelmio-api-doc:
+    resource: "@NelmioApiDocBundle/Resources/config/routing/swaggerui.xml"
+    prefix:   /documentation
+
+app_user_api_controller:
+    type: rest
+    resource: App\Controller\UserController
+
+################################################################################
+
 # fos_user_security:
 #     resource: "@FOSUserBundle/Resources/config/routing/security.xml"
 # fos_user_profile:
@@ -13,25 +31,3 @@
 #     resource: "@FOSUserBundle/Resources/config/routing/change_password.xml"
 #     prefix: /profile
 
-NelmioApiDocBundle:
-    resource: "@NelmioApiDocBundle/Resources/config/routing/swaggerui.xml"
-    prefix:   /api/doc
-
-# FOSAuthServerBundle
-fos_oauth_server_token:
-    resource: "@FOSOAuthServerBundle/Resources/config/routing/token.xml"
-
-fos_oauth_server_authorize:
-    resource: "@FOSOAuthServerBundle/Resources/config/routing/authorize.xml"
-
-app_corebundle_rest_controller:
-    type: rest
-    resource: App\CoreBundle\Controller\CoreController
-
-# app_rest:
-#     path: /rest/{id}
-#     defaults: { _controller: 'App\CoreBundle\Controller\CoreController::restAction' }
-
-nelmio-api-doc:
-    resource: "@NelmioApiDocBundle/Resources/config/routing/swaggerui.xml"
-    prefix:   /documentation

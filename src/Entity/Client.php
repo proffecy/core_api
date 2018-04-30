@@ -1,7 +1,7 @@
 <?php
-// src/CoreBundle/Entity/Client.php
+// src/Entity/Client.php
 
-namespace App\CoreBundle\Entity;
+namespace App\Entity;
 
 use FOS\OAuthServerBundle\Entity\Client as BaseClient;
 use Doctrine\ORM\Mapping as ORM;
