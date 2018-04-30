@@ -1,0 +1,18 @@
+nelmio_api_doc:
+    documentation:
+        info:
+            title: Proffecy
+            description: This is a new rest api!
+            version: 1.0.0
+    areas: # to filter documented areas
+        path_patterns:
+            - ^/home #api(?!/doc$) # Accepts routes under /api except /api/doc
+            - ^/oauth
+            - ^/signup
+            - ^/api
+            - ^/documentation
+            - ^/login
+            - ^/login_check
+            - ^/logout
+            - ^/profile
+            - ^/register
