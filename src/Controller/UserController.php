@@ -128,7 +128,7 @@ class UserController extends FOSRestController
         
         $em = $this->getDoctrine()->getManager();
             
-        $usersRepository = $em->getRepository("CoreBundle:User");
+        $usersRepository = $em->getRepository("App:User");
 
         $email_exist = $usersRepository->findOneBy(array('email' => $email));
 
