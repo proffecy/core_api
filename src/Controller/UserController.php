@@ -24,107 +24,198 @@ use App\Entity\Client;
 
 
 class UserController extends FOSRestController
+
 {
 
     /**
      * @Get(
-     *     path = "/home/{id}",
-     *     name = "app_home",
-     *     requirements = {"id"="\d+"}
+     *     path = "/users/new/{mail}/{username}/{pass}",
+     *     name = "new_users",
+     *     requirements = {"mail", "username", "pass"}
      * )
-     * 
-     * @View(serializerGroups={"home"})
+     * @View(serializerGroups={"new"})
      */
-    public function indexAction(Request $request)
+    public function newUsersAction(Request $request)
     {
-        //Authenticate 
-
-        $authenticationErrorResponse = $this->checkAuthAndGetErrorResponse($request);
-        
-        if ($authenticationErrorResponse) {
-        
-            return $authenticationErrorResponse;
-        
-        }
-
-        //else do somthing ...
-
-        $data = array(
-
-            "name" => "admin",            
-            "extra" => "Is awesome!",
-            "id" => $request->get('id')
-
-        );
-        
-        //$users = $this->getDoctrine()->getRepository('User')->findAll()
-        
-        $view = $this->view($data);
-
-        return $this->handleView($view);
-
-    }
-
-    private function checkAuthAndGetErrorResponse(Request $request)
-    {
-        $tokenManager = $this->get('fos_oauth_server.access_token_manager.default');
-
-        $bearerToken = $this->get('fos_oauth_server.server')->getBearerToken($request);
-        
-        if (!$bearerToken) {
-
-            return new JsonResponse(['status' => 400, 'message' => 'Bearer token not supplied'], 400);
-        }
-
-        $accessToken = $tokenManager->findTokenByToken($bearerToken);
-
-        if (!$accessToken) {
-
-            return new JsonResponse(['status' => 400, 'message' => 'Bearer token not valid'], 400);
-        }
-
-        if ($accessToken->hasExpired()) {
-
-            return new JsonResponse(['status' => 400, 'message' => 'Access token has expired'], 400);
-        }
-
-        // may want to validate something else about the client, but that is beyond OAuth2 scope
-        
-        $client = $accessToken->getClient();
-        
-        var_dump($client);
-        
-        return null;
-    }
-
-
-    
-    /**
-     * @Get(
-     *     path = "/signup/{mail}/{username}/{pass}",
-     *     name = "app_signup",
-     *     requirements={"mail", "username", "pass"}
-     * )
-     * 
-     * @View(serializerGroups={"user"})
-     */
-    public function signupAction(Request $request) {
-        
         $array['mail'] = $request->get('mail');
         
         $array['username'] = $request->get('username');
         
         $array['pass'] = $request->get('pass');
-        
 
-        $succesfullyRegistered = $this->register($array['mail'], $array['username'], $array['pass'] );
+        $succesfullyRegistered = $this->registerUser($array['mail'], $array['username'], $array['pass'] );
         
         return $succesfullyRegistered;
-   }
+    }
+    
+
+    /**
+     * @Get(
+     *     path = "/users/auth/{client_id}/{email}/{pass}",
+     *     name = "users_auth",
+     *     requirements = {"client_id", "email", "pass"}
+     * )
+     * @View(serializerGroups={"auth"})
+     */
+
+    public function usersAuthAction(Request $request)
+    {   
+        $email = $request->get('email');
+        
+        $password = $request->get('pass');
+
+        # Checking user by fos
+
+        $user_manager = $this->get('fos_user.user_manager');
+        
+        $factory = $this->get('security.encoder_factory');
+
+        # Check 1: on email
+
+        $user = $user_manager->findUserByEmail($email);
+        
+        $encoder = $factory->getEncoder($user);
+        
+        $salt = $user->getSalt();
+
+        # Check 2: on password
+
+        if( $encoder->isPasswordValid($user->getPassword(), $password, $salt) ) {
+            
+            $userid = $user->getId();
+
+            $username = $user->getUsername();
+
+            # Get random_id
+
+            $clientid = trim(explode('_', $request->get('client_id'))[1]);
+
+            # Check 3: on client_id
+
+            $client = $this->getDoctrine()->getRepository('App:Client')->findByRandomId($clientid);
+
+            if( $client ) {
+                
+                # Get Secret
+
+                $secret = $client[0]->getSecret();
+
+                $cid = $request->get('client_id');
+
+                $pass = $request->get('pass');
+
+                # Check 4: Check on request to check clientId & secret then get token from Oauth
+                
+                $url = "http://s.wbrm/core_api/public/oauth/v2/token?";
+                
+                $url .= "client_id=".$cid."&client_secret=".$secret."&";
+                
+                $url .= "grant_type=password&password=".$pass."&username=".$username; 
+                
+                $options = array(
+                      
+                      CURLOPT_URL            => $url, 
+                      
+                      CURLOPT_RETURNTRANSFER => true,
+                      
+                      CURLOPT_HEADER         => false
+                );
+                
+                # Send request and get response
+
+                $CURL = curl_init();
+
+                curl_setopt_array($CURL,$options);
+
+                # Get response
+
+                $content = curl_exec($CURL);
+                 
+                curl_close($CURL);
+
+                # \O/ Return response token informations \O/
+
+                $view = $this->view($content);
+
+                return $this->handleView($view);
+            }
+
+            $view = $this->view(array("error"=>"no client"));
+
+            return $this->handleView($view);
+
+        } else {
+
+            $response = array(
+              'message'=>'Username or Password not valid.',
+              'response'=> Response::HTTP_UNAUTHORIZED,
+              'Content-type'=>'application/json'
+            );
+
+            $view = $this->view( $response );
+
+            return $this->handleView($view);
+        }
+
+    }
+    
+    
+    /**
+     * @Get(
+     *     path = "/users/{id}",
+     *     name = "get_user",
+     *     requirements = {"id"="\d+"}
+     * )
+     */
+    public function getUserAction($id)
+    {
+        $authenticationErrorResponse = $this->checkAuthAndGetErrorResponse($request);
+        
+        if ($authenticationErrorResponse) {
+        
+            return $authenticationErrorResponse;
+        }
+
+        $users = $this->getDoctrine()->getRepository('App:User')->findById($id);
+
+        $data = array(
+
+            "id" => $users[0]->getId(),
+
+            "username" => $users[0]->getUsername(),
+
+            "mail" => $users[0]->getEmail(),
+        );
+
+        $view = $this->view( $data );
+
+        return $this->handleView($view);
+    }
+
+
+    public function getUsersAction()
+    {} // "get_users"            [GET] /users
+
+    public function editUserAction($slug)
+    {} // "edit_user"            [GET] /users/{slug}/edit
+
+    public function lockUserAction($slug)
+    {} // "lock_user"            [LOCK] /users/{slug}
+
+    public function unlockUserAction($slug)
+    {} // "unlock_user"          [UNLOCK] /users/{slug}
+
+    public function banUserAction($slug)
+    {} // "ban_user"             [PATCH] /users/{slug}/ban
+
+    public function removeUserAction($slug)
+    {} // "remove_user"          [GET] /users/{slug}/remove
+
+    public function deleteUserAction($slug)
+    {} // "delete_user"          [DELETE] /users/{slug}
  
 
-
-    private function register($email,$username,$password) {    
+    private function registerUser($email,$username,$password) {    
         
         $em = $this->getDoctrine()->getManager();
             
@@ -182,26 +273,67 @@ class UserController extends FOSRestController
 
         $bytes = random_bytes(32);
         
+        $user_id = $user->getId();
+
+        # client id  & secret id      
         $random_id =  hash( 'tiger192,4', $user->getUsername() .  $bytes ); 
 
-        $random_id =  $user->getId() . 'prfcy' . $random_id;
+        $random_id =  $user_id . 'prfcy' . $random_id;
 
         $bytesecret = random_bytes(32);
         
         $random_secret = hash('tiger192,4', $user->getUsername() . $bytesecret);
+        
+        # insert
 
         $em = $this->getDoctrine()->getManager();
         
         $connection = $em->getConnection();
         
-        $statement = $connection->prepare("INSERT INTO oauth2_clients SET random_id = '".$random_id."', redirect_uris = '".serialize(array("/home"))."', secret = '".$random_secret."',  allowed_grant_types= '".serialize(array("password"))."'");
-        
+        $statement = $connection->prepare("INSERT INTO oauth2_clients SET random_id = '".$random_id."', redirect_uris = '".serialize(array("/users/".$user_id))."', secret = '".$random_secret."',  allowed_grant_types= '".serialize(array("password"))."'");
+
         if($statement->execute())
         { 
-            return array("signup_response"=>"registred",  "client_id"=>$random_id);
+            $lastid = $connection->lastInsertId();
+
+            return array("new_user_response"=>"registred",  "client_id"=>$lastid.'_'.$random_id);
         }
 
-        return "\O/";
+        return false;
     }
+
+
+
+    private function checkAuthAndGetErrorResponse(Request $request)
+    {
+        $tokenManager = $this->get('fos_oauth_server.access_token_manager.default');
+
+        $bearerToken = $this->get('fos_oauth_server.server')->getBearerToken($request);
+        
+        if (!$bearerToken) {
+
+            return new JsonResponse(['status' => 400, 'message' => 'Bearer token not supplied'], 400);
+        }
+
+        $accessToken = $tokenManager->findTokenByToken($bearerToken);
+
+        if (!$accessToken) {
+
+            return new JsonResponse(['status' => 400, 'message' => 'Bearer token not valid'], 400);
+        }
+
+        if ($accessToken->hasExpired()) {
+
+            return new JsonResponse(['status' => 400, 'message' => 'Access token has expired'], 400);
+        }
+
+        // may want to validate something else about the client, but that is beyond OAuth2 scope
+        
+        # $client = $accessToken->getClient();
+        
+        return null;
+    }
+
+
    
 }
