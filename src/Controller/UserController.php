@@ -167,7 +167,7 @@ class UserController extends FOSRestController
      *     requirements = {"id"="\d+"}
      * )
      */
-    public function getUserAction($id)
+    public function getUserAction($id, Request $request)
     {
         $authenticationErrorResponse = $this->checkAuthAndGetErrorResponse($request);
         

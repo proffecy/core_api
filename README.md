@@ -25,7 +25,7 @@ http://s.wbrm/core_api/public/oauth/v2/token?grant_type=password@client_id=1_3bc
 ========================
 Then get
 QUERY protected by oauth
-http GET http://s.wbrm/core_api/public/home/2 \
+http GET http://s.wbrm/core_api/public/users/2 \
 	"Authorization:Bearer ZTg0YmRiZGViNmFkOWYyZDk4NmM5YzMxNGFiNDZhYzFjNjA5OGNjNDNjYmRlN2IzYmFiYzdhMzUxZTdjNjZiOQ"
 
 CHECK OAUTH IN CONTROLLER
