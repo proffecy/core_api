@@ -51,9 +51,9 @@ class UserController extends FOSRestController
 
     /**
      * @Get(
-     *     path = "/users/auth/{client_id}/{email}/{pass}",
+     *     path = "/users/auth/{email}/{pass}",
      *     name = "users_auth",
-     *     requirements = {"client_id", "email", "pass"}
+     *     requirements = {"email", "pass"}
      * )
      * @View(serializerGroups={"auth"})
      */
@@ -88,19 +88,28 @@ class UserController extends FOSRestController
 
             # Get random_id
 
-            $clientid = trim(explode('_', $request->get('client_id'))[1]);
+          //  $clientid = trim(explode('_', $request->get('client_id'))[1]);
 
             # Check 3: on client_id
 
-            $client = $this->getDoctrine()->getRepository('App:Client')->findByRandomId($clientid);
+            //$client = $this->getDoctrine()->getRepository('App:Client')->findByRandomId($clientid);
+                $em = $this->getDoctrine()->getManager();
+                $client = $em->getRepository("App:Client")->createQueryBuilder('c')
+                   ->Where('c.randomId LIKE :rid')
+                   ->setParameter('rid', $userid.'%')
+                   ->getQuery()
+                   ->getResult();
 
             if( $client ) {
                 
                 # Get Secret
-
+                $id_table_client = $client[0]->getId();
+                
                 $secret = $client[0]->getSecret();
 
-                $cid = $request->get('client_id');
+                $randomid = $client[0]->getRandomId();
+                
+                $cid = $id_table_client.'_'.$randomid;
 
                 $pass = $request->get('pass');
 
@@ -147,8 +156,11 @@ class UserController extends FOSRestController
         } else {
 
             $response = array(
+              
               'message'=>'Username or Password not valid.',
+              
               'response'=> Response::HTTP_UNAUTHORIZED,
+              
               'Content-type'=>'application/json'
             );
 
@@ -156,10 +168,10 @@ class UserController extends FOSRestController
 
             return $this->handleView($view);
         }
-
     }
     
     
+
     /**
      * @Get(
      *     path = "/users/{id}",
@@ -193,6 +205,10 @@ class UserController extends FOSRestController
     }
 
 
+
+
+
+
     public function getUsersAction()
     {} // "get_users"            [GET] /users
 
@@ -214,6 +230,9 @@ class UserController extends FOSRestController
     public function deleteUserAction($slug)
     {} // "delete_user"          [DELETE] /users/{slug}
  
+
+
+
 
     private function registerUser($email,$username,$password) {    
         
@@ -256,9 +275,10 @@ class UserController extends FOSRestController
 
         $user_id = $user->getId();
 
-        $client_id = $this->createClientId($user);
+        $createClientIdresponse = $this->createClientId($user);
 
-        $arrayinfo =  array( 'user'=>$username,'client_id'=>$client_id["client_id"]);
+        // $client_id["client_id"])
+        $arrayinfo =  array( 'user'=>$username,'email'=>$email, 'registred'=>true, 'client_reponse'=>$createClientIdresponse);
 
         $view = $this->view($arrayinfo);
 
@@ -284,7 +304,7 @@ class UserController extends FOSRestController
         
         $random_secret = hash('tiger192,4', $user->getUsername() . $bytesecret);
         
-        # insert
+        # insert new client id and secret in client base
 
         $em = $this->getDoctrine()->getManager();
         
@@ -296,10 +316,10 @@ class UserController extends FOSRestController
         { 
             $lastid = $connection->lastInsertId();
 
-            return array("new_user_response"=>"registred",  "client_id"=>$lastid.'_'.$random_id);
+            return array("client_created"=>true);
         }
 
-        return false;
+        return array("client_created"=>false);
     }
 
 
