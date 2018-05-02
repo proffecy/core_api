@@ -1,35 +1,28 @@
-# core_api
+AUTHENTICATE WITH FOS OAUTH AND FOS USER
+========================================
 
 SIGNUP
 ------
-requete http://s.wbrm/core_api/public/signup/test@test.test/test/test
-	=>  return client_id;
+requete http://s.wbrm/core_api/public/users/new/{email}/{username}/{password}
+	=>  return Array ( User informations and Client response if registred )
 
-requete http://s.wbrm/core_api/public/client_id/32prfcy8deadd06230bc1f4d6d7814a0dcda823f6960d9dd3f808da
-	=> return client_secret;
+requete http://s.wbrm/core_api/public/users/auth/{email}/{password}
+	=> return Array (Token informations);
 
-LOGIN
-------
-http POST http://s.wbrm/core_api/public/oauth/v2/token \
-    grant_type=password \
-    client_id=1_2bcbxd9e24g0gk4swg0kwgcwg4o8k8g4g888kwc44gcc0gwwk4 \
-    client_secret=4ok2x70rlfokc8g0wws8c8kwcokw80k44sg48goc0ok4w0so0k \
-    username=admin \
-    password=admin
-ou
 
-http://s.wbrm/core_api/public/oauth/v2/token?grant_type=password@client_id=1_3bcbxd9e24g0gk4swg0kwgcwg4o8k8g4g888kwc44gcc0gwwk4&client_secret=4ok2x70rlfokc8g0wws8c8kwcokw80k44sg48goc0ok4w0so0k&username=admin&password=admin
 
-	=> return bearer MzEwNGVjNjcwNTczODU5NzdiMWQ2NTdjMDVhYWM3MzU2YzViMmZmYWM5OTYyN2I5ODllZDQ1MTBjMTgxNGVhYQ
-
-========================
-Then get
-QUERY protected by oauth
+DO QUERIES PROTECTED BY TOKEN
+-----------------------------
 http GET http://s.wbrm/core_api/public/users/2 \
 	"Authorization:Bearer ZTg0YmRiZGViNmFkOWYyZDk4NmM5YzMxNGFiNDZhYzFjNjA5OGNjNDNjYmRlN2IzYmFiYzdhMzUxZTdjNjZiOQ"
 
-CHECK OAUTH IN CONTROLLER
-------------------------
+
+----------------------------------------------------------------------------------------------
+In controller ...
+
+
+CHECK IF AUTHENTICATED WITH OAUTH IN CONTROLLER
+-----------------------------------------------
 
  	private function checkAuthAndGetErrorResponse(Request $request)
 	{
@@ -61,7 +54,7 @@ CHECK OAUTH IN CONTROLLER
 	    return null;
 	}
 
-	# ------------ Authenticate ------------
+# ------------ Authenticate ------------
 
     $authenticationErrorResponse = $this->checkAuthAndGetErrorResponse($request);
     
@@ -70,5 +63,7 @@ CHECK OAUTH IN CONTROLLER
         return $authenticationErrorResponse;
     
     }
+
+    # \O/ else user is authenticated so do something \O/
 
 # ------------------------------------------------------------------------------------------------
