@@ -3,17 +3,17 @@ AUTHENTICATE WITH FOS OAUTH AND FOS USER
 
 SIGNUP
 ------
-requete http://s.wbrm/core_api/public/users/new/{email}/{username}/{password}
+requete http://localhost/core_api/public/users/new/{email}/{username}/{password}
 	=>  return Array ( User informations and Client response if registred )
 
-requete http://s.wbrm/core_api/public/users/auth/{email}/{password}
+requete http://localhost/core_api/public/users/auth/{email}/{password}
 	=> return Array (Token informations);
 
 
 
 DO QUERIES PROTECTED BY TOKEN
 -----------------------------
-http GET http://s.wbrm/core_api/public/users/2 \
+http GET http://localhost/core_api/public/users/2 \
 	"Authorization:Bearer ZTg0YmRiZGViNmFkOWYyZDk4NmM5YzMxNGFiNDZhYzFjNjA5OGNjNDNjYmRlN2IzYmFiYzdhMzUxZTdjNjZiOQ"
 
 
