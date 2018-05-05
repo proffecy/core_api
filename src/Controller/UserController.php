@@ -24,9 +24,7 @@ use App\Entity\Client;
 
 
 class UserController extends FOSRestController
-
 {
-
     /**
      * @Get(
      *     path = "/users/new/{mail}/{username}/{pass}",
@@ -57,7 +55,6 @@ class UserController extends FOSRestController
      * )
      * @View(serializerGroups={"auth"})
      */
-
     public function usersAuthAction(Request $request)
     {   
         $email = $request->get('email');
@@ -86,23 +83,21 @@ class UserController extends FOSRestController
 
             $username = $user->getUsername();
 
-            # Get random_id
-
-          //  $clientid = trim(explode('_', $request->get('client_id'))[1]);
 
             # Check 3: on client_id
 
-            //$client = $this->getDoctrine()->getRepository('App:Client')->findByRandomId($clientid);
-                $em = $this->getDoctrine()->getManager();
-                $client = $em->getRepository("App:Client")->createQueryBuilder('c')
-                   ->Where('c.randomId LIKE :rid')
-                   ->setParameter('rid', $userid.'%')
-                   ->getQuery()
-                   ->getResult();
+            $em = $this->getDoctrine()->getManager();
+
+            $client = $em->getRepository("App:Client")->createQueryBuilder('c')
+               ->Where('c.randomId LIKE :rid')
+               ->setParameter('rid', $userid.'prfcy%')
+               ->getQuery()
+               ->getResult();
 
             if( $client ) {
                 
                 # Get Secret
+
                 $id_table_client = $client[0]->getId();
                 
                 $secret = $client[0]->getSecret();
@@ -171,7 +166,6 @@ class UserController extends FOSRestController
     }
     
     
-
     /**
      * @Get(
      *     path = "/users/{id}",
@@ -203,35 +197,6 @@ class UserController extends FOSRestController
 
         return $this->handleView($view);
     }
-
-
-
-
-
-
-    public function getUsersAction()
-    {} // "get_users"            [GET] /users
-
-    public function editUserAction($slug)
-    {} // "edit_user"            [GET] /users/{slug}/edit
-
-    public function lockUserAction($slug)
-    {} // "lock_user"            [LOCK] /users/{slug}
-
-    public function unlockUserAction($slug)
-    {} // "unlock_user"          [UNLOCK] /users/{slug}
-
-    public function banUserAction($slug)
-    {} // "ban_user"             [PATCH] /users/{slug}/ban
-
-    public function removeUserAction($slug)
-    {} // "remove_user"          [GET] /users/{slug}/remove
-
-    public function deleteUserAction($slug)
-    {} // "delete_user"          [DELETE] /users/{slug}
- 
-
-
 
 
     private function registerUser($email,$username,$password) {    
@@ -277,7 +242,6 @@ class UserController extends FOSRestController
 
         $createClientIdresponse = $this->createClientId($user);
 
-        // $client_id["client_id"])
         $arrayinfo =  array( 'user'=>$username,'email'=>$email, 'registred'=>true, 'client_reponse'=>$createClientIdresponse);
 
         $view = $this->view($arrayinfo);
@@ -295,7 +259,8 @@ class UserController extends FOSRestController
         
         $user_id = $user->getId();
 
-        # client id  & secret id      
+        # client id  & secret id
+
         $random_id =  hash( 'tiger192,4', $user->getUsername() .  $bytes ); 
 
         $random_id =  $user_id . 'prfcy' . $random_id;
@@ -323,7 +288,6 @@ class UserController extends FOSRestController
     }
 
 
-
     private function checkAuthAndGetErrorResponse(Request $request)
     {
         $tokenManager = $this->get('fos_oauth_server.access_token_manager.default');
@@ -346,7 +310,6 @@ class UserController extends FOSRestController
 
             return new JsonResponse(['status' => 400, 'message' => 'Access token has expired'], 400);
         }
-
         // may want to validate something else about the client, but that is beyond OAuth2 scope
         
         # $client = $accessToken->getClient();
@@ -354,6 +317,4 @@ class UserController extends FOSRestController
         return null;
     }
 
-
-   
 }
