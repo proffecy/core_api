@@ -66,4 +66,4 @@ CHECK IF AUTHENTICATED WITH OAUTH IN CONTROLLER
 
     # \O/ else user is authenticated so do something \O/
 
-# ----------------------------------------------------------------------
+# ----------------------------------------
