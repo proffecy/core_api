@@ -1,3 +1,7 @@
+
+Check => http://localhost/core_api/public/documentation to get Api Doc
+
+
 AUTHENTICATE WITH FOS OAUTH AND FOS USER
 ========================================
 
