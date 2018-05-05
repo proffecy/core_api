@@ -18,7 +18,7 @@ http GET http://localhost/core_api/public/users/2 \
 
 
 ----------------------------------------------------------------------------------------------
-=> in controller ...
+=> in controller create function to check authentification ...
 
 
 CHECK IF AUTHENTICATED WITH OAUTH IN CONTROLLER
@@ -56,7 +56,7 @@ CHECK IF AUTHENTICATED WITH OAUTH IN CONTROLLER
 
 # ------------ Authenticate ------------
 
-=> in function xxxxAction() ...
+=> then use this code for secure and check if authenticated in functions xxxxAction() ...
 
     $authenticationErrorResponse = $this->checkAuthAndGetErrorResponse($request);
     
