@@ -166,38 +166,6 @@ class UserController extends FOSRestController
     }
     
     
-    /**
-     * @Get(
-     *     path = "/users/{id}",
-     *     name = "get_user",
-     *     requirements = {"id"="\d+"}
-     * )
-     */
-    public function getUserAction($id, Request $request)
-    {
-        $authenticationErrorResponse = $this->checkAuthAndGetErrorResponse($request);
-        
-        if ($authenticationErrorResponse) {
-        
-            return $authenticationErrorResponse;
-        }
-
-        $users = $this->getDoctrine()->getRepository('App:User')->findById($id);
-
-        $data = array(
-
-            "id" => $users[0]->getId(),
-
-            "username" => $users[0]->getUsername(),
-
-            "mail" => $users[0]->getEmail(),
-        );
-
-        $view = $this->view( $data );
-
-        return $this->handleView($view);
-    }
-
 
     private function registerUser($email,$username,$password) {    
         
@@ -316,5 +284,42 @@ class UserController extends FOSRestController
         
         return null;
     }
+
+
+    
+
+
+    /**
+     * @Get(
+     *     path = "/users/{id}",
+     *     name = "get_user",
+     *     requirements = {"id"="\d+"}
+     * )
+     */
+    public function getUserAction($id, Request $request)
+    {
+        $authenticationErrorResponse = $this->checkAuthAndGetErrorResponse($request);
+        
+        if ($authenticationErrorResponse) {
+        
+            return $authenticationErrorResponse;
+        }
+
+        $users = $this->getDoctrine()->getRepository('App:User')->findById($id);
+
+        $data = array(
+
+            "id" => $users[0]->getId(),
+
+            "username" => $users[0]->getUsername(),
+
+            "mail" => $users[0]->getEmail(),
+        );
+
+        $view = $this->view( $data );
+
+        return $this->handleView($view);
+    }
+
 
 }
