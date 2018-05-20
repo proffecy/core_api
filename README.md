@@ -17,12 +17,21 @@ requete http://localhost/core_api/public/users/auth/{email}/{password}
 
 DO QUERIES PROTECTED BY TOKEN
 -----------------------------
+
+Get user by id :
+
 http GET http://localhost/core_api/public/users/2 \
 	"Authorization:Bearer ZTg0YmRiZGViNmFkOWYyZDk4NmM5YzMxNGFiNDZhYzFjNjA5OGNjNDNjYmRlN2IzYmFiYzdhMzUxZTdjNjZiOQ"
 
+Get user role: 
+
+http GET http://localhost/core_api/public/users/check \
+	"Authorization:Bearer ZTg0YmRiZGViNmFkOWYyZDk4NmM5YzMxNGFiNDZhYzFjNjA5OGNjNDNjYmRlN2IzYmFiYzdhMzUxZTdjNjZiOQ"
 
 ----------------------------------------------------------------------------------------------
-=> in controller create function to check authentification ...
+
+
+=> Function to check authentification ...
 
 
 CHECK IF AUTHENTICATED WITH OAUTH IN CONTROLLER

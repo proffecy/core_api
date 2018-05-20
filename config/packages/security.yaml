@@ -35,6 +35,9 @@ security:
         - { path: ^/admin/logout$, role: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/admin/login_check$, role: IS_AUTHENTICATED_ANONYMOUSLY }
 
+        - { path: ^/users/all, role: ROLE_SUPER_ADMIN }
+        - { path: ^/, role: ROLE_USER }
+        - { path: ^/, role: ROLE_ADMIN }
 
 # app/config/security.yml
 # security:
