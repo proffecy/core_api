@@ -21,15 +21,16 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Nelmio\ApiDocBundle\Annotation\ApiDoc;
 use App\Entity\User;
 use App\Entity\Client;
+use App\Entity\AccessToken;
 
 
 class UserController extends FOSRestController
 {
     /**
      * @Get(
-     *     path = "/users/new/{mail}/{username}/{pass}",
+     *     path = "/users/new/{mail}/{username}/{pass}/{role}",
      *     name = "new_users",
-     *     requirements = {"mail", "username", "pass"}
+     *     requirements = {"mail", "username", "pass", "role"}
      * )
      * @View(serializerGroups={"new"})
      */
@@ -40,8 +41,10 @@ class UserController extends FOSRestController
         $array['username'] = $request->get('username');
         
         $array['pass'] = $request->get('pass');
+        
+        $array['role'] = $request->get('role');
 
-        $succesfullyRegistered = $this->registerUser($array['mail'], $array['username'], $array['pass'] );
+        $succesfullyRegistered = $this->registerUser($array['mail'], $array['username'], $array['pass'],  $array['role'] );
         
         return $succesfullyRegistered;
     }
@@ -82,7 +85,6 @@ class UserController extends FOSRestController
             $userid = $user->getId();
 
             $username = $user->getUsername();
-
 
             # Check 3: on client_id
 
@@ -167,7 +169,73 @@ class UserController extends FOSRestController
     
     
 
-    private function registerUser($email,$username,$password) {    
+    /**
+     * @Get(
+     *     path = "/users/check",
+     *     name = "get_roles",
+     *     
+     * )
+     */
+    public function checkRolesAction(Request $request)
+    {
+        
+        $authenticationErrorResponse = $this->checkAuthAndGetErrorResponse($request);
+
+        if ($authenticationErrorResponse) {
+
+            return $authenticationErrorResponse;
+        }
+        
+        $roles = $this->getUserRoles($request);
+
+        $view = $this->view(array("num_roles"=>count($roles), "roles"=>$roles));
+        
+        return $this->handleView($view);
+
+    }
+
+
+    
+
+
+    /**
+     * @Get(
+     *     path = "/users/{id}",
+     *     name = "get_user",
+     *     requirements = {"id"="\d+"}
+     * )
+     */
+    public function getUserAction($id, Request $request)
+    {
+        $authenticationErrorResponse = $this->checkAuthAndGetErrorResponse($request);
+        
+        if ($authenticationErrorResponse) {
+        
+            return $authenticationErrorResponse;
+        }
+
+        $users = $this->getDoctrine()->getRepository('App:User')->findById($id);
+
+        $data = array(
+
+            "id" => $users[0]->getId(),
+
+            "username" => $users[0]->getUsername(),
+
+            "mail" => $users[0]->getEmail(),
+        );
+
+        $view = $this->view( $data );
+
+        return $this->handleView($view);
+    }
+
+
+
+
+
+
+    private function registerUser($email,$username,$password, $roles) {    
         
         $em = $this->getDoctrine()->getManager();
             
@@ -183,12 +251,17 @@ class UserController extends FOSRestController
         }
         
         $user = new User();
-
-        $roles=[];
         
-        $roles[] = 'ROLE_USER';
+        switch($roles) {
+            
+            case '0' : $user->setRoles( array('ROLE_USER')); break;
 
-        $user->setRoles($roles);
+            case '1' : $user->setRoles( array('ROLE_ADMIN')); break;
+            
+            case '2' :$user->setRoles( array('ROLE_ADMIN', 'ROLE_SUPER_ADMIN')); break;
+            
+            default:break;
+        }
 
         $user->setUsername($username);
 
@@ -210,7 +283,7 @@ class UserController extends FOSRestController
 
         $createClientIdresponse = $this->createClientId($user);
 
-        $arrayinfo =  array( 'user'=>$username,'email'=>$email, 'registred'=>true, 'client_reponse'=>$createClientIdresponse);
+        $arrayinfo =  array('id' => $user_id,  'user'=>$username,'email'=>$email, 'registred'=>true, 'client_reponse'=>$createClientIdresponse);
 
         $view = $this->view($arrayinfo);
 
@@ -256,6 +329,26 @@ class UserController extends FOSRestController
     }
 
 
+    private function getUserRoles($request) {
+
+        $bearer_token = $this->get('fos_oauth_server.server')->getBearerToken($request);
+       
+        $em = $this->getDoctrine()->getManager();
+        // TODO => select user_id from oauth2_access_tokens where token='$bearer_token'
+        $userid = $em->getRepository("App:AccessToken")->createQueryBuilder('at')
+               ->Where('at.token LIKE :token')
+               ->setParameter('token', $bearer_token)
+               ->getQuery()
+               ->getResult();
+
+        
+        $roles = $userid[0]->getUser()->getRoles();
+
+        return $roles;
+        
+    }
+
+
     private function checkAuthAndGetErrorResponse(Request $request)
     {
         $tokenManager = $this->get('fos_oauth_server.access_token_manager.default');
@@ -284,42 +377,5 @@ class UserController extends FOSRestController
         
         return null;
     }
-
-
-    
-
-
-    /**
-     * @Get(
-     *     path = "/users/{id}",
-     *     name = "get_user",
-     *     requirements = {"id"="\d+"}
-     * )
-     */
-    public function getUserAction($id, Request $request)
-    {
-        $authenticationErrorResponse = $this->checkAuthAndGetErrorResponse($request);
-        
-        if ($authenticationErrorResponse) {
-        
-            return $authenticationErrorResponse;
-        }
-
-        $users = $this->getDoctrine()->getRepository('App:User')->findById($id);
-
-        $data = array(
-
-            "id" => $users[0]->getId(),
-
-            "username" => $users[0]->getUsername(),
-
-            "mail" => $users[0]->getEmail(),
-        );
-
-        $view = $this->view( $data );
-
-        return $this->handleView($view);
-    }
-
 
 }
