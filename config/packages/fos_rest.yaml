@@ -5,6 +5,7 @@ fos_rest:
 
     format_listener:
         rules:
+           # - { path: '^/', priorities: ['html'], fallback_format: 'html' }                # will eventually be JSON formated
             - { path: '^/', priorities: ['json'], fallback_format: 'json' }                # will eventually be JSON formated
     view:
         view_response_listener: true

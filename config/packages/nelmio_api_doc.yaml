@@ -1,7 +1,7 @@
 nelmio_api_doc:
     documentation:
         info:
-            title: Proffecy
+            title: Proffecy Core Api
             description: This is a new rest api!
             version: 1.0.0
     areas: # to filter documented areas
