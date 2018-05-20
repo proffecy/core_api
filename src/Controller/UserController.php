@@ -166,8 +166,7 @@ class UserController extends FOSRestController
             return $this->handleView($view);
         }
     }
-    
-    
+
 
     /**
      * @Get(
@@ -177,6 +176,24 @@ class UserController extends FOSRestController
      * )
      */
     public function checkRolesAction(Request $request)
+    {
+        switch( $this->userRolesChecking($request) ) {
+
+            case "superadmin" : $view = $this->view( array('roles'=>'superadmin') ); return $this->handleView($view); break;
+
+            case "admin" : $view = $this->view( array('roles'=>'admin') ); return $this->handleView($view); break;
+            
+            case "user" : $view = $this->view( array('roles'=>'user') ); return $this->handleView($view); break;
+            
+            case "anonym" : $view = $this->view( array('roles'=>'anonym') ); return $this->handleView($view); break;
+            
+            default: break;
+        }
+    }
+
+   
+
+    private function userRolesChecking($request)
     {
         
         $authenticationErrorResponse = $this->checkAuthAndGetErrorResponse($request);
@@ -188,14 +205,24 @@ class UserController extends FOSRestController
         
         $roles = $this->getUserRoles($request);
 
-        $view = $this->view(array("num_roles"=>count($roles), "roles"=>$roles));
-        
-        return $this->handleView($view);
+        if(in_array('ROLE_SUPER_ADMIN', $roles)) {
 
+            return 'superadmin';
+
+        } elseif(in_array('ROLE_ADMIN', $roles)) {
+
+            return 'admin';
+
+        } elseif(in_array('ROLE_USER', $roles)) {
+
+            return 'user';
+
+        } else {
+
+            return 'anonym';
+        }
     }
 
-
-    
 
 
     /**
@@ -229,10 +256,6 @@ class UserController extends FOSRestController
 
         return $this->handleView($view);
     }
-
-
-
-
 
 
     private function registerUser($email,$username,$password, $roles) {    
