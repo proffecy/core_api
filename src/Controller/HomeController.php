@@ -36,8 +36,24 @@ class HomeController extends Controller
      */
     public function indexAction()
     {
-        $appname="Proffecy Core Api";
+        
+        return $this->redirectToRoute('proffecy_home');
+       /* return $this->render('/core/home.html.twig', array(
+            'appname' => $appname,
+        ));*/
+    }
 
+
+	/**
+     * @Get(
+     *     path = "/home",
+     *     name = "proffecy_home"
+     * )
+     */
+    public function homeAction()
+    {
+        $appname="Proffecy Core Api";
+        
         return $this->render('/core/home.html.twig', array(
             'appname' => $appname,
         ));
