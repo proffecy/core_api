@@ -232,7 +232,7 @@ class UserController extends FOSRestController
      *     requirements = {"id"="\d+"}
      * )
      */
-    public function getUserAction($id, Request $request)
+    public function getUserByIdAction($id, Request $request)
     {
         $authenticationErrorResponse = $this->checkAuthAndGetErrorResponse($request);
         
@@ -256,6 +256,104 @@ class UserController extends FOSRestController
 
         return $this->handleView($view);
     }
+
+
+
+    /**
+     * @Get(
+     *     path = "/users/{mail}",
+     *     name = "get_user",
+     *     requirements = {"mail"}
+     * )
+     */
+    public function getUserByMailAction(Request $request)
+    {
+        $authenticationErrorResponse = $this->checkAuthAndGetErrorResponse($request);
+        
+        if ($authenticationErrorResponse) {
+        
+            return $authenticationErrorResponse;
+        }
+        $mail = $request->get('mail');
+
+        $users = $this->getDoctrine()->getRepository('App:User')->findByMail($mail);
+
+        $data = array(
+
+            "id" => $users[0]->getId(),
+
+            "username" => $users[0]->getUsername(),
+
+            "mail" => $users[0]->getEmail(),
+        );
+
+        $view = $this->view( $data );
+
+        return $this->handleView($view);
+    }
+
+
+
+     /**
+     * @Get(
+     *     path = "/users/edit/{mail}/{newmail}/{password}",
+     *     name = "edit_mail",
+     *     requirements = {"mail", "newmail"}
+     * )
+     */
+    public function editMailProfileAction(Request $request)
+    {
+        
+        $password = $request->get('password');
+
+        $oldmail = $request->get('mail');
+        
+        $newmail = $request->get('newmail');
+        
+        # Checking user by fos
+
+        $user_manager = $this->get('fos_user.user_manager');
+        
+        $factory = $this->get('security.encoder_factory');
+
+        # Check 1: on email
+
+        $user = $user_manager->findUserByEmail($oldmail);
+        
+        $encoder = $factory->getEncoder($user);
+        
+        $salt = $user->getSalt();
+
+        # Check 2: on password
+        
+        if($user) {
+
+            if( $encoder->isPasswordValid($user->getPassword(), $password, $salt) ) {
+                
+                $user->setEmailCanonical($newmail);
+        
+                $user->setEmail($newmail);
+
+                $entityManager = $this->getDoctrine()->getManager();
+
+                $entityManager->persist($user);
+
+                $entityManager->flush();
+
+                $user_id = $user->getId();
+
+                $view = $this->view(array('edited'=>$user->getEmail()));
+
+                return $this->handleView($view);
+            }
+        }
+
+        $view = $this->view(array('edited'=>'error'));
+
+        return $this->handleView($view);
+    }
+
+
 
 
     private function registerUser($email,$username,$password, $roles) {    
@@ -350,6 +448,8 @@ class UserController extends FOSRestController
 
         return array("client_created"=>false);
     }
+
+
 
 
     private function getUserRoles($request) {

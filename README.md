@@ -14,14 +14,17 @@ requete http://localhost/core_api/public/users/auth/{email}/{password}
 	=> return Array (Token informations);
 
 
-
-DO QUERIES PROTECTED BY TOKEN
+DO QUERIES PROTECTED BY TOKEN 	
+-----------------------------
+*Use http command line tool or insomnia or other tools to test queries
 -----------------------------
 
 Get user by id :
 
 http GET http://localhost/core_api/public/users/2 \
 	"Authorization:Bearer ZTg0YmRiZGViNmFkOWYyZDk4NmM5YzMxNGFiNDZhYzFjNjA5OGNjNDNjYmRlN2IzYmFiYzdhMzUxZTdjNjZiOQ"
+
+----------------
 
 Get user role: 
 
