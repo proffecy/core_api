@@ -21,15 +21,38 @@ DO QUERIES PROTECTED BY TOKEN
 
 Get user by id :
 
+[ http://localhost/core_api/public/users/{id} ]
+
 http GET http://localhost/core_api/public/users/2 \
 	"Authorization:Bearer ZTg0YmRiZGViNmFkOWYyZDk4NmM5YzMxNGFiNDZhYzFjNjA5OGNjNDNjYmRlN2IzYmFiYzdhMzUxZTdjNjZiOQ"
 
 ----------------
 
-Get user role: 
+Get user by mail :
+
+[ http://localhost/core_api/public/users/{mail} ]
+
+http GET http://localhost/core_api/public/users/john@who.mail \
+	"Authorization:Bearer ZTg0YmRiZGViNmFkOWYyZDk4NmM5YzMxNGFiNDZhYzFjNjA5OGNjNDNjYmRlN2IzYmFiYzdhMzUxZTdjNjZiOQ"
+
+----------------
+
+Check user role: 
+
+[ http://localhost/core_api/public/users/check ]
 
 http GET http://localhost/core_api/public/users/check \
 	"Authorization:Bearer ZTg0YmRiZGViNmFkOWYyZDk4NmM5YzMxNGFiNDZhYzFjNjA5OGNjNDNjYmRlN2IzYmFiYzdhMzUxZTdjNjZiOQ"
+
+----------------
+
+Edit user profile mail :
+
+[ http://localhost/core_api/public/users/{oldmail}/{newmail}/{password} ]
+
+http GET http://localhost/core_api/public/users/john@who.mail/johnwho@who.com/myp@ss \
+	"Authorization:Bearer ZTg0YmRiZGViNmFkOWYyZDk4NmM5YzMxNGFiNDZhYzFjNjA5OGNjNDNjYmRlN2IzYmFiYzdhMzUxZTdjNjZiOQ"
+
 
 ----------------------------------------------------------------------------------------------
 
