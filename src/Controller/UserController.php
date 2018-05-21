@@ -325,7 +325,7 @@ class UserController extends FOSRestController
         $salt = $user->getSalt();
 
         # Check 2: on password
-        
+
         if($user) {
 
             if( $encoder->isPasswordValid($user->getPassword(), $password, $salt) ) {
@@ -470,6 +470,8 @@ class UserController extends FOSRestController
         return $roles;
         
     }
+
+
 
 
     private function checkAuthAndGetErrorResponse(Request $request)

@@ -1,39 +1,54 @@
 
 Check => http://localhost/core_api/public/documentation to get Api Doc
 
+*Use http command line tool or insomnia or other tools to test queries
+
 
 AUTHENTICATE WITH FOS OAUTH AND FOS USER
 ========================================
 
-SIGNUP
-------
-requete http://localhost/core_api/public/users/new/{email}/{username}/{password}
+Suscribe :
+
+[ http://localhost/core_api/public/users/new/{email}/{username}/{password} ]
+
+requete http GET http://localhost/core_api/public/users/new/john@who.mail/{john}/myp@ss
+	
 	=>  return Array ( User informations and Client response if registred )
 
-requete http://localhost/core_api/public/users/auth/{email}/{password}
+
+Signin :
+
+[ http://localhost/core_api/public/users/auth/{email}/{password} ]
+
+requete http GET http://localhost/core_api/public/users/auth/john@who.mail/myp@ss
+	
 	=> return Array (Token informations);
 
 
 DO QUERIES PROTECTED BY TOKEN 	
 -----------------------------
-*Use http command line tool or insomnia or other tools to test queries
------------------------------
+
 
 Get user by id :
 
 [ http://localhost/core_api/public/users/{id} ]
 
-http GET http://localhost/core_api/public/users/2 \
+with access_token :
+requete http GET http://localhost/core_api/public/users/2 \
 	"Authorization:Bearer ZTg0YmRiZGViNmFkOWYyZDk4NmM5YzMxNGFiNDZhYzFjNjA5OGNjNDNjYmRlN2IzYmFiYzdhMzUxZTdjNjZiOQ"
 
+	=> return User informations;
 ----------------
 
 Get user by mail :
 
 [ http://localhost/core_api/public/users/{mail} ]
 
-http GET http://localhost/core_api/public/users/john@who.mail \
+with access_token :
+requete http GET http://localhost/core_api/public/users/john@who.mail \
 	"Authorization:Bearer ZTg0YmRiZGViNmFkOWYyZDk4NmM5YzMxNGFiNDZhYzFjNjA5OGNjNDNjYmRlN2IzYmFiYzdhMzUxZTdjNjZiOQ"
+
+	=> return User informations;
 
 ----------------
 
@@ -41,8 +56,11 @@ Check user role:
 
 [ http://localhost/core_api/public/users/check ]
 
-http GET http://localhost/core_api/public/users/check \
+with access_token :
+requete http GET  GET http://localhost/core_api/public/users/check \
 	"Authorization:Bearer ZTg0YmRiZGViNmFkOWYyZDk4NmM5YzMxNGFiNDZhYzFjNjA5OGNjNDNjYmRlN2IzYmFiYzdhMzUxZTdjNjZiOQ"
+
+	=> return User Roles;
 
 ----------------
 
@@ -53,11 +71,10 @@ Edit user profile mail :
 http GET http://localhost/core_api/public/users/john@who.mail/johnwho@who.com/myp@ss \
 	"Authorization:Bearer ZTg0YmRiZGViNmFkOWYyZDk4NmM5YzMxNGFiNDZhYzFjNjA5OGNjNDNjYmRlN2IzYmFiYzdhMzUxZTdjNjZiOQ"
 
+	=> return edited new user mail;
+
 
 ----------------------------------------------------------------------------------------------
-
-
-=> Function to check authentification ...
 
 
 CHECK IF AUTHENTICATED WITH OAUTH IN CONTROLLER
