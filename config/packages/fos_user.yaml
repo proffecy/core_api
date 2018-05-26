@@ -3,5 +3,5 @@ fos_user:
     firewall_name: api
     user_class: App\Entity\User
     from_email:
-        address: "seb@proffecy.fr"
-        sender_name: "Contact Proffecy"
+        address: "seb.proffecy@gmail.com"
+        sender_name: "Proffecy"

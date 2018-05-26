@@ -7,6 +7,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\Security\Core\Exception\TokenNotFoundException;
 use Symfony\Component\Security\Core\Exception\AuthenticationExpiredException;
 use FOS\RestBundle\Controller\Annotations\Route;
@@ -22,10 +23,11 @@ use Nelmio\ApiDocBundle\Annotation\ApiDoc;
 use App\Entity\User;
 use App\Entity\Client;
 use App\Entity\AccessToken;
-
+use App\Services\PRFCYGettokenService;
 
 class UserController extends FOSRestController
 {
+
     /**
      * @Get(
      *     path = "/users/new/{mail}/{username}/{pass}/{role}",
@@ -58,7 +60,7 @@ class UserController extends FOSRestController
      * )
      * @View(serializerGroups={"auth"})
      */
-    public function usersAuthAction(Request $request)
+    public function usersAuthAction(PRFCYGetTokenService $service, Request $request)
     {   
         $email = $request->get('email');
         
@@ -91,10 +93,15 @@ class UserController extends FOSRestController
             $em = $this->getDoctrine()->getManager();
 
             $client = $em->getRepository("App:Client")->createQueryBuilder('c')
+               
                ->Where('c.randomId LIKE :rid')
+               
                ->setParameter('rid', $userid.'prfcy%')
+               
                ->getQuery()
-               ->getResult();
+               
+               ->getResult()
+            ;
 
             if( $client ) {
                 
@@ -110,40 +117,29 @@ class UserController extends FOSRestController
 
                 $pass = $request->get('pass');
 
-                # Check 4: Check on request to check clientId & secret then get token from Oauth
-                
-                $url = "http://s.wbrm/core_api/public/oauth/v2/token?";
-                
-                $url .= "client_id=".$cid."&client_secret=".$secret."&";
-                
-                $url .= "grant_type=password&password=".$pass."&username=".$username; 
-                
-                $options = array(
-                      
-                      CURLOPT_URL            => $url, 
-                      
-                      CURLOPT_RETURNTRANSFER => true,
-                      
-                      CURLOPT_HEADER         => false
-                );
-                
-                # Send request and get response
+                $oauth_route = 'http://s.wbrm/core_api/public/oauth/v2/token';
 
-                $CURL = curl_init();
+                # Check 4: Request to check clientId & secret then get token from Oauth
 
-                curl_setopt_array($CURL,$options);
+                $token = $service->getToken(
+                    
+                    $oauth_route,
+                    
+                    $cid,
+                    
+                    $secret,
+                    
+                    $pass,
+                    
+                    $username
 
-                # Get response
-
-                $content = curl_exec($CURL);
-                 
-                curl_close($CURL);
+                    );
 
                 # \O/ Return response token informations \O/
 
-                $view = $this->view($content);
+                $view = $this->view( $token );
 
-                return $this->handleView($view);
+                return $this->handleView( $view );
             }
 
             $view = $this->view(array("error"=>"no client"));
@@ -296,7 +292,7 @@ class UserController extends FOSRestController
 
      /**
      * @Get(
-     *     path = "/users/edit/{mail}/{newmail}/{password}",
+     *     path = "/users/edit/mail/{mail}/{newmail}/{password}",
      *     name = "edit_mail",
      *     requirements = {"mail", "newmail"}
      * )
@@ -352,6 +348,155 @@ class UserController extends FOSRestController
 
         return $this->handleView($view);
     }
+
+
+
+     /**
+     * @Get(
+     *     path = "/users/edit/password/{mail}/{password}/{newpassword}/{confirmpassword}",
+     *     name = "edit_password",
+     *     requirements = {"mail","password","newpassword","confirmpassword"}
+     * )
+     */
+    public function editPasswordRequestAction(Request $request)
+    {
+        
+        $mail = $request->get('mail');
+        
+        $password = $request->get('password');
+        
+        $newpassword = $request->get('newpassword');
+        
+        $confirmpassword = $request->get('confirmpassword');
+        
+        # Checking user by fos
+
+        $user_manager = $this->get('fos_user.user_manager');
+        
+        $factory = $this->get('security.encoder_factory');
+
+        # Check 1: on email
+
+        $user = $user_manager->findUserByEmail($mail);
+        
+        $encoder = $factory->getEncoder($user);
+        
+        $salt = $user->getSalt();
+
+        # Check 2: on password
+
+        if($user) {
+
+            if( $encoder->isPasswordValid($user->getPassword(), $password, $salt) ) {
+                    
+                if($confirmpassword == $newpassword) {
+
+                    $user->setPlainPassword($newpassword);
+
+                    $entityManager = $this->getDoctrine()->getManager();
+
+                    $entityManager->persist($user);
+
+                    $entityManager->flush();
+
+                    $user_id = $user->getId();
+
+                    $view = $this->view(array('edited'=>'1'));
+
+                    return $this->handleView($view);
+
+                } else {
+
+                    $view = $this->view(array('edited'=>'wrong confirm password'));
+
+                    return $this->handleView($view);
+                }
+            }
+        }
+
+        $view = $this->view(array('edited'=>'error'));
+
+        return $this->handleView($view);
+    }
+
+
+
+     /**
+     * @Get(
+     *     path ="/users/resetpassword/{userEmail}",
+     *     name ="user_password_reset",
+     *     requirements = { "userEmail" }
+     * )
+     *
+     */
+    public function resetPasswordRequestAction(Request $request)
+    {
+        $email = $request->get('userEmail');
+
+        $user = $this->get('fos_user.user_manager')->findUserByEmail($email);
+
+        if (null === $user) {
+           
+            throw $this->createNotFoundException();
+        }
+
+        if ($user->isPasswordRequestNonExpired($this->container->getParameter('fos_user.resetting.token_ttl'))) {
+          
+            //throw new BadRequestHttpException('Password request alerady requested');
+
+            $view = $this->view(array('response' => 'Password request alerady requested', 'pass'=>$user->getPassword()));
+
+            return $this->handleView($view);
+        }
+
+        if (null === $user->getConfirmationToken()) {
+            
+            /** @var $tokenGenerator \FOS\UserBundle\Util\TokenGeneratorInterface */
+            
+            $tokenGenerator = $this->get('fos_user.util.token_generator');
+            
+            $user->setConfirmationToken($tokenGenerator->generateToken());
+        }
+
+        if($this->get('fos_user.mailer')->sendResettingEmailMessage($user)) {
+        
+            $user->setPasswordRequestedAt(new \DateTime());
+            
+            $this->get('fos_user.user_manager')->updateUser($user);
+
+            $view = $this->view(array('response' => new Response(Response::HTTP_OK), 'pass'=>$user->getPassword()));
+
+            return $this->handleView($view);
+        }
+    }
+
+
+
+    private function getUserRoles($request) {
+
+        $bearer_token = $this->get('fos_oauth_server.server')->getBearerToken($request);
+       
+        $em = $this->getDoctrine()->getManager();
+        
+        // select user_id from oauth2_access_tokens where token='$bearer_token'
+
+        $userid = $em->getRepository("App:AccessToken")->createQueryBuilder('at')
+        
+               ->Where('at.token LIKE :token')
+        
+               ->setParameter('token', $bearer_token)
+        
+               ->getQuery()
+        
+               ->getResult();
+
+        
+        $roles = $userid[0]->getUser()->getRoles();
+
+        return $roles;
+        
+    }
+
 
 
 
@@ -449,27 +594,6 @@ class UserController extends FOSRestController
         return array("client_created"=>false);
     }
 
-
-
-
-    private function getUserRoles($request) {
-
-        $bearer_token = $this->get('fos_oauth_server.server')->getBearerToken($request);
-       
-        $em = $this->getDoctrine()->getManager();
-        // TODO => select user_id from oauth2_access_tokens where token='$bearer_token'
-        $userid = $em->getRepository("App:AccessToken")->createQueryBuilder('at')
-               ->Where('at.token LIKE :token')
-               ->setParameter('token', $bearer_token)
-               ->getQuery()
-               ->getResult();
-
-        
-        $roles = $userid[0]->getUser()->getRoles();
-
-        return $roles;
-        
-    }
 
 
 

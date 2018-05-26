@@ -27,3 +27,5 @@ yarn-error.log
 .idea/modules.xml
 .idea/workspace.xml
 .idea
+
+/src/human_app_menu_specificity.md
