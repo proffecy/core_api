@@ -23,7 +23,8 @@ use Nelmio\ApiDocBundle\Annotation\ApiDoc;
 use App\Entity\User;
 use App\Entity\Client;
 use App\Entity\AccessToken;
-use App\Services\PRFCYGettokenService;
+use App\Services\PRFCYCreateClientId;
+use App\Services\PRFCYGetTokenService;
 
 class UserController extends FOSRestController
 {
@@ -500,7 +501,6 @@ class UserController extends FOSRestController
 
 
 
-
     private function registerUser($email,$username,$password, $roles) {    
         
         $em = $this->getDoctrine()->getManager();
@@ -547,7 +547,9 @@ class UserController extends FOSRestController
 
         $user_id = $user->getId();
 
-        $createClientIdresponse = $this->createClientId($user);
+        $service = new PRFCYCreateClientId($entityManager);
+
+        $createClientIdresponse = $service->createClientId($user);
 
         $arrayinfo =  array('id' => $user_id,  'user'=>$username,'email'=>$email, 'registred'=>true, 'client_reponse'=>$createClientIdresponse);
 
@@ -556,45 +558,6 @@ class UserController extends FOSRestController
         return $this->handleView($view);
 
     }
-
-
-    private function createClientId (User $user) {
-
-        $client = new Client();
-
-        $bytes = random_bytes(32);
-        
-        $user_id = $user->getId();
-
-        # client id  & secret id
-
-        $random_id =  hash( 'tiger192,4', $user->getUsername() .  $bytes ); 
-
-        $random_id =  $user_id . 'prfcy' . $random_id;
-
-        $bytesecret = random_bytes(32);
-        
-        $random_secret = hash('tiger192,4', $user->getUsername() . $bytesecret);
-        
-        # insert new client id and secret in client base
-
-        $em = $this->getDoctrine()->getManager();
-        
-        $connection = $em->getConnection();
-        
-        $statement = $connection->prepare("INSERT INTO oauth2_clients SET random_id = '".$random_id."', redirect_uris = '".serialize(array("/users/".$user_id))."', secret = '".$random_secret."',  allowed_grant_types= '".serialize(array("password"))."'");
-
-        if($statement->execute())
-        { 
-            $lastid = $connection->lastInsertId();
-
-            return array("client_created"=>true);
-        }
-
-        return array("client_created"=>false);
-    }
-
-
 
 
 
