@@ -23,6 +23,7 @@ use Nelmio\ApiDocBundle\Annotation\ApiDoc;
 use App\Entity\User;
 use App\Entity\Client;
 use App\Entity\AccessToken;
+use App\Services\PRFCYRegisterUser;
 use App\Services\PRFCYCreateClientId;
 use App\Services\PRFCYGetTokenService;
 
@@ -47,11 +48,19 @@ class UserController extends FOSRestController
         
         $array['role'] = $request->get('role');
 
-        $succesfullyRegistered = $this->registerUser($array['mail'], $array['username'], $array['pass'],  $array['role'] );
+        $em = $this->getDoctrine()->getManager();
+
+        $service = new PRFCYRegisterUser($em);
+
+        $succesfullyRegistered = $service->registerUser($array['mail'], $array['username'], $array['pass'],  $array['role'] );
         
-        return $succesfullyRegistered;
+        $view = $this->view($succesfullyRegistered);
+
+        return $this->handleView($view);
     }
     
+
+
 
     /**
      * @Get(
@@ -498,66 +507,6 @@ class UserController extends FOSRestController
         
     }
 
-
-
-
-    private function registerUser($email,$username,$password, $roles) {    
-        
-        $em = $this->getDoctrine()->getManager();
-            
-        $usersRepository = $em->getRepository("App:User");
-
-        $email_exist = $usersRepository->findOneBy(array('email' => $email));
-
-        if($email_exist) {
-
-            $view = $this->view(array('response'=>$username. ' exist'));
-
-            return $this->handleView($view);
-        }
-        
-        $user = new User();
-        
-        switch($roles) {
-            
-            case '0' : $user->setRoles( array('ROLE_USER')); break;
-
-            case '1' : $user->setRoles( array('ROLE_ADMIN')); break;
-            
-            case '2' :$user->setRoles( array('ROLE_ADMIN', 'ROLE_SUPER_ADMIN')); break;
-            
-            default:break;
-        }
-
-        $user->setUsername($username);
-
-        $user->setEmailCanonical($email);
-        
-        $user->setEmail($email);
-
-        $user->setPlainPassword($password);
-        
-        $user->setEnabled(1);
-
-        $entityManager = $this->getDoctrine()->getManager();
-
-        $entityManager->persist($user);
-
-        $entityManager->flush();
-
-        $user_id = $user->getId();
-
-        $service = new PRFCYCreateClientId($entityManager);
-
-        $createClientIdresponse = $service->createClientId($user);
-
-        $arrayinfo =  array('id' => $user_id,  'user'=>$username,'email'=>$email, 'registred'=>true, 'client_reponse'=>$createClientIdresponse);
-
-        $view = $this->view($arrayinfo);
-
-        return $this->handleView($view);
-
-    }
 
 
 
