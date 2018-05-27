@@ -77,49 +77,18 @@ http GET http://localhost/core_api/public/users/john@who.mail/johnwho@who.com/my
 ----------------------------------------------------------------------------------------------
 
 
-CHECK IF AUTHENTICATED WITH OAUTH IN CONTROLLER
+CHECK IF AUTHENTICATED
 -----------------------------------------------
 
- 	private function checkAuthAndGetErrorResponse(Request $request)
-	{
-	    $tokenManager = $this->get('fos_oauth_server.access_token_manager.default');
+=> Use this code for secure and check if authenticated in Controller functions .
 
-	    $bearerToken = $this->get('fos_oauth_server.server')->getBearerToken($request);
-	    
-	    if (!$bearerToken) {
+    $checkauth = new PRFCYAuthCheck ($this->container);
 
-	        return new JsonResponse(['status' => 400, 'message' => 'Bearer token not supplied'], 400);
-	    }
+    $authenticationErrorResponse = $checkauth->checkAuthAndGetErrorResponse($request);
 
-	    $accessToken = $tokenManager->findTokenByToken($bearerToken);
-
-	    if (!$accessToken) {
-
-	        return new JsonResponse(['status' => 400, 'message' => 'Bearer token not valid'], 400);
-	    }
-
-	    if ($accessToken->hasExpired()) {
-
-	        return new JsonResponse(['status' => 400, 'message' => 'Access token has expired'], 400);
-	    }
-
-	    // may want to validate something else about the client, but that is beyond OAuth2 scope
-	    
-	    //$client = $accessToken->getClient();
-
-	    return null;
-	}
-
-# ------------ Authenticate ------------
-
-=> then use this code for secure and check if authenticated in functions xxxxAction() ...
-
-    $authenticationErrorResponse = $this->checkAuthAndGetErrorResponse($request);
-    
     if ($authenticationErrorResponse) {
-    
+
         return $authenticationErrorResponse;
-    
     }
 
     # \O/ else user is authenticated so do something \O/
