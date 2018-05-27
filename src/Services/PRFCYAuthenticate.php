@@ -34,7 +34,7 @@ class PRFCYAuthenticate
         
         $factory = $this->container->get('security.encoder_factory');
         
-        # Check 1: on mail
+        # Check 1: on mail ---
 
         $user = $user_manager->findUserByEmail($email);
         
@@ -46,7 +46,7 @@ class PRFCYAuthenticate
         
         	$salt = $user->getSalt();
 
-        	# Check 2: on password
+        	# Check 2: on password ---
 
         	if( $encoder->isPasswordValid($user->getPassword(), $password, $salt) ) {
 
@@ -54,7 +54,7 @@ class PRFCYAuthenticate
 
 	            $username = $user->getUsername();
 
-	            # Check 3: on client_id
+	            # Check 3: on client_id ---
 
 	            $client = $this->em->getRepository("App:Client")->createQueryBuilder('c')
 	               

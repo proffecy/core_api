@@ -46,7 +46,7 @@ class PRFCYGetTokenService
      
     curl_close($CURL);
 
-    return json_decode($content,true);
+    return json_decode($content, true);
   }
 
 

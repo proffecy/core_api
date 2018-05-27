@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -24,6 +25,7 @@ use App\Entity\User;
 use App\Entity\Client;
 use App\Entity\AccessToken;
 use App\Services\PRFCYRegisterUser;
+use App\Services\PRFCYAuthenticate;
 use App\Services\PRFCYCreateClientId;
 use App\Services\PRFCYGetTokenService;
 
@@ -70,107 +72,22 @@ class UserController extends FOSRestController
      * )
      * @View(serializerGroups={"auth"})
      */
-    public function usersAuthAction(PRFCYGetTokenService $service, Request $request)
+    public function usersAuthAction(Request $request)
     {   
+        
         $email = $request->get('email');
         
         $password = $request->get('pass');
 
-        # Checking user by fos
+        $em = $this->getDoctrine()->getManager();
 
-        $user_manager = $this->get('fos_user.user_manager');
-        
-        $factory = $this->get('security.encoder_factory');
+        $authservice =  new PRFCYAuthenticate($em, $this->container);
 
-        # Check 1: on email
+        $authtoken = $authservice->authenticate($email, $password);
 
-        $user = $user_manager->findUserByEmail($email);
-        
-        $encoder = $factory->getEncoder($user);
-        
-        $salt = $user->getSalt();
+        $view = $this->view( $authtoken  );
 
-        # Check 2: on password
-
-        if( $encoder->isPasswordValid($user->getPassword(), $password, $salt) ) {
-            
-            $userid = $user->getId();
-
-            $username = $user->getUsername();
-
-            # Check 3: on client_id
-
-            $em = $this->getDoctrine()->getManager();
-
-            $client = $em->getRepository("App:Client")->createQueryBuilder('c')
-               
-               ->Where('c.randomId LIKE :rid')
-               
-               ->setParameter('rid', $userid.'prfcy%')
-               
-               ->getQuery()
-               
-               ->getResult()
-            ;
-
-            if( $client ) {
-                
-                # Get Secret
-
-                $id_table_client = $client[0]->getId();
-                
-                $secret = $client[0]->getSecret();
-
-                $randomid = $client[0]->getRandomId();
-                
-                $cid = $id_table_client.'_'.$randomid;
-
-                $pass = $request->get('pass');
-
-                $oauth_route = 'http://s.wbrm/core_api/public/oauth/v2/token';
-
-                # Check 4: Request to check clientId & secret then get token from Oauth
-
-                $token = $service->getToken(
-                    
-                    $oauth_route,
-                    
-                    $cid,
-                    
-                    $secret,
-                    
-                    $pass,
-                    
-                    $username
-
-                    );
-
-                # \O/ Return response token informations \O/
-
-                $view = $this->view( $token );
-
-                return $this->handleView( $view );
-            }
-
-            $view = $this->view(array("error"=>"no client"));
-
-            return $this->handleView($view);
-
-        } else {
-
-            $response = array(
-              
-              'message'=>'Username or Password not valid.',
-              
-              'response'=> Response::HTTP_UNAUTHORIZED,
-              
-              'Content-type'=>'application/json'
-            );
-
-            $view = $this->view( $response );
-
-            return $this->handleView($view);
-        }
+        return $this->handleView( $view );
     }
 
 
