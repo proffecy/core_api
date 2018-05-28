@@ -15,10 +15,10 @@ class PRFCYGetTokenService
   * @param string $username
   * @return jwt
   */
-	public function getToken($oauth_route, $client_id, $client_secret, $password, $username) {
+  public function getToken($oauth_route, $client_id, $client_secret, $password, $username) {
 
-  	$url = $oauth_route."?";
-                
+    $url = $oauth_route."?";
+
     $url .= "client_id=".$client_id."&client_secret=".$client_secret."&";
     
     $url .= "grant_type=password&password=".$password."&username=".$username; 
@@ -48,5 +48,4 @@ class PRFCYGetTokenService
 
     return json_decode($content, true);
   }
-
 }
