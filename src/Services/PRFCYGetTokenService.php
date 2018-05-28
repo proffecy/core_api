@@ -5,16 +5,16 @@ namespace App\Services;
 class PRFCYGetTokenService 
 {
 
-   /**
-    * Request to check clientId & secret then get token from Oauth
-    *
-    * @param string $oauth_route (http://s.wbrm/core_api/public/oauth/v2/token)
-    * @param string $client_id
-    * @param string $client_secret
-    * @param string $password
-    * @param string $username
-    * @return jwt
-    */
+  /**
+  * Request to check clientId & secret then get token from Oauth
+  *
+  * @param string $oauth_route (http://s.wbrm/core_api/public/oauth/v2/token)
+  * @param string $client_id
+  * @param string $client_secret
+  * @param string $password
+  * @param string $username
+  * @return jwt
+  */
 	public function getToken($oauth_route, $client_id, $client_secret, $password, $username) {
 
   	$url = $oauth_route."?";
@@ -48,6 +48,5 @@ class PRFCYGetTokenService
 
     return json_decode($content, true);
   }
-
 
 }
