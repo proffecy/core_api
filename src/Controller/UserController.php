@@ -24,6 +24,7 @@ use Nelmio\ApiDocBundle\Annotation\ApiDoc;
 use App\Entity\User;
 use App\Entity\Client;
 use App\Entity\AccessToken;
+use App\Services\PRFCYAuthCheck;
 use App\Services\PRFCYRegisterUser;
 use App\Services\PRFCYAuthenticate;
 use App\Services\PRFCYCreateClientId;
@@ -74,7 +75,6 @@ class UserController extends FOSRestController
      */
     public function usersAuthAction(Request $request)
     {   
-        
         $email = $request->get('email');
         
         $password = $request->get('pass');
@@ -100,6 +100,16 @@ class UserController extends FOSRestController
      */
     public function checkRolesAction(Request $request)
     {
+
+        $checkauth = new PRFCYAuthCheck ($this->container);
+
+        $authenticationErrorResponse = $checkauth->checkAuthAndGetErrorResponse($request);
+
+        if ($authenticationErrorResponse) {
+
+            return $authenticationErrorResponse;
+        }
+        
         switch( $this->userRolesChecking($request) ) {
 
             case "superadmin" : $view = $this->view( array('roles'=>'superadmin') ); return $this->handleView($view); break;
@@ -118,14 +128,6 @@ class UserController extends FOSRestController
 
     private function userRolesChecking($request)
     {
-        
-        $authenticationErrorResponse = $this->checkAuthAndGetErrorResponse($request);
-
-        if ($authenticationErrorResponse) {
-
-            return $authenticationErrorResponse;
-        }
-        
         $roles = $this->getUserRoles($request);
 
         if(in_array('ROLE_SUPER_ADMIN', $roles)) {
@@ -157,10 +159,12 @@ class UserController extends FOSRestController
      */
     public function getUserByIdAction($id, Request $request)
     {
-        $authenticationErrorResponse = $this->checkAuthAndGetErrorResponse($request);
-        
+        $checkauth = new PRFCYAuthCheck ($this->container);
+
+        $authenticationErrorResponse = $checkauth->checkAuthAndGetErrorResponse($request);
+
         if ($authenticationErrorResponse) {
-        
+
             return $authenticationErrorResponse;
         }
 
@@ -191,15 +195,18 @@ class UserController extends FOSRestController
      */
     public function getUserByMailAction(Request $request)
     {
-        $authenticationErrorResponse = $this->checkAuthAndGetErrorResponse($request);
-        
+        $checkauth = new PRFCYAuthCheck ($this->container);
+
+        $authenticationErrorResponse = $checkauth->checkAuthAndGetErrorResponse($request);
+
         if ($authenticationErrorResponse) {
-        
+
             return $authenticationErrorResponse;
         }
+
         $mail = $request->get('mail');
 
-        $users = $this->getDoctrine()->getRepository('App:User')->findByMail($mail);
+        $users = $this->getDoctrine()->getRepository('App:User')->findByEmail($mail);
 
         $data = array(
 
@@ -226,7 +233,15 @@ class UserController extends FOSRestController
      */
     public function editMailProfileAction(Request $request)
     {
-        
+        $checkauth = new PRFCYAuthCheck ($this->container);
+
+        $authenticationErrorResponse = $checkauth->checkAuthAndGetErrorResponse($request);
+
+        if ($authenticationErrorResponse) {
+
+            return $authenticationErrorResponse;
+        }
+
         $password = $request->get('password');
 
         $oldmail = $request->get('mail');
@@ -288,6 +303,15 @@ class UserController extends FOSRestController
     public function editPasswordRequestAction(Request $request)
     {
         
+        $checkauth = new PRFCYAuthCheck ($this->container);
+
+        $authenticationErrorResponse = $checkauth->checkAuthAndGetErrorResponse($request);
+
+        if ($authenticationErrorResponse) {
+
+            return $authenticationErrorResponse;
+        }
+
         $mail = $request->get('mail');
         
         $password = $request->get('password');
@@ -358,6 +382,16 @@ class UserController extends FOSRestController
      */
     public function resetPasswordRequestAction(Request $request)
     {
+
+        $checkauth = new PRFCYAuthCheck ($this->container);
+
+        $authenticationErrorResponse = $checkauth->checkAuthAndGetErrorResponse($request);
+
+        if ($authenticationErrorResponse) {
+
+            return $authenticationErrorResponse;
+        }
+
         $email = $request->get('userEmail');
 
         $user = $this->get('fos_user.user_manager')->findUserByEmail($email);
@@ -425,35 +459,5 @@ class UserController extends FOSRestController
     }
 
 
-
-
-    private function checkAuthAndGetErrorResponse(Request $request)
-    {
-        $tokenManager = $this->get('fos_oauth_server.access_token_manager.default');
-
-        $bearerToken = $this->get('fos_oauth_server.server')->getBearerToken($request);
-        
-        if (!$bearerToken) {
-
-            return new JsonResponse(['status' => 400, 'message' => 'Bearer token not supplied'], 400);
-        }
-
-        $accessToken = $tokenManager->findTokenByToken($bearerToken);
-
-        if (!$accessToken) {
-
-            return new JsonResponse(['status' => 400, 'message' => 'Bearer token not valid'], 400);
-        }
-
-        if ($accessToken->hasExpired()) {
-
-            return new JsonResponse(['status' => 400, 'message' => 'Access token has expired'], 400);
-        }
-        // may want to validate something else about the client, but that is beyond OAuth2 scope
-        
-        # $client = $accessToken->getClient();
-        
-        return null;
-    }
 
 }

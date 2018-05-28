@@ -34,3 +34,5 @@ framework:
 
     serializer:
         enabled: true
+
+    validation: { enabled: true, enable_annotations: true }

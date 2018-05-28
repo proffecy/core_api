@@ -17,8 +17,6 @@ class PRFCYAuthCheck
 	}
 
 
-
-
 	public function checkAuthAndGetErrorResponse($request)
     {
         $tokenManager = $this->container->get('fos_oauth_server.access_token_manager.default');

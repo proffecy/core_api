@@ -4,7 +4,6 @@ namespace App\Services;
 use App\Entity\User;
 use Doctrine\ORM\EntityManager;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
 class PRFCYAuthenticate
 {

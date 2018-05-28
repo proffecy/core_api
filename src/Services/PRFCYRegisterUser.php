@@ -4,6 +4,7 @@ namespace App\Services;
 use Doctrine\ORM\EntityManager;
 use App\Entity\User;
 use App\Entity\Client;
+use App\Entity\Human;
 use App\Services\PRFCYCreateClientId;
 
 class PRFCYRegisterUser
@@ -37,7 +38,9 @@ class PRFCYRegisterUser
         }
         
         $user = new User();
-        
+
+        $human = new Human();
+
         switch($roles) {
             
             case '0' : $user->setRoles( array('ROLE_USER')); break;
