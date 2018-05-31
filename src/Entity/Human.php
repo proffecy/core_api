@@ -165,7 +165,7 @@ class Human
         return $this->organisation_name;
     }
 
-    public function setLastname($organisation_name)
+    public function setOrganisation_name($organisation_name)
     {
         $this->organisation_name = $organisation_name;
 
