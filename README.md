@@ -5,7 +5,16 @@ Check => http://localhost/core_api/public/documentation to get Api Doc
 
 
 AUTHENTICATE WITH FOS OAUTH AND FOS USER
-========================================
+======================================== 
+
+
+...
+
+Nota*:  password have to be encrypted. (see /doc/register)
+
+...
+
+
 
 Suscribe :
 
@@ -15,6 +24,7 @@ requete http GET http://localhost/core_api/public/users/new/john@who.mail/{john}
 	
 	=>  return Array ( User informations and Client response if registred )
 
+-------------
 
 Signin :
 
@@ -68,10 +78,11 @@ Edit user profile mail :
 
 [ http://localhost/core_api/public/users/{oldmail}/{newmail}/{password} ]
 
-http GET http://localhost/core_api/public/users/john@who.mail/johnwho@who.com/myp@ss \
+http GET http://localhost/core_api/public/users/john@who.mail/johnwho@who.com/bW9ucGFzc3dvcmR7W29iamVjdCBVbmRlZmluZWRdfSt7cHJmY3l9Kw== \
 	"Authorization:Bearer ZTg0YmRiZGViNmFkOWYyZDk4NmM5YzMxNGFiNDZhYzFjNjA5OGNjNDNjYmRlN2IzYmFiYzdhMzUxZTdjNjZiOQ"
 
 	=> return edited new user mail;
+
 
 
 ----------------------------------------------------------------------------------------------
