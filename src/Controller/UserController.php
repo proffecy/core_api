@@ -25,6 +25,7 @@ use App\Entity\User;
 use App\Entity\Client;
 use App\Entity\AccessToken;
 use App\Services\PRFCYAuthCheck;
+use App\Services\PRFCYcheckPass64;
 use App\Services\PRFCYRegisterUser;
 use App\Services\PRFCYAuthenticate;
 use App\Services\PRFCYCreateClientId;
@@ -34,7 +35,7 @@ class UserController extends FOSRestController
 {
 
     /**
-     * @Get(
+     * @Post(
      *     path = "/users/new/{mail}/{username}/{pass}/{role}",
      *     name = "new_users",
      *     requirements = {"mail", "username", "pass", "role"}
@@ -51,6 +52,10 @@ class UserController extends FOSRestController
         
         $array['role'] = $request->get('role');
 
+        $checkpass = new PRFCYcheckPass64();
+
+        $array['pass'] = $checkpass->decodePass64( $request->get('pass') );
+
         $em = $this->getDoctrine()->getManager();
 
         $service = new PRFCYRegisterUser($em);
@@ -66,24 +71,26 @@ class UserController extends FOSRestController
 
 
     /**
-     * @Get(
-     *     path = "/users/auth/{email}/{pass}",
+     * @Post(
+     *     path = "/users/auth/{email}/{password}",
      *     name = "users_auth",
-     *     requirements = {"email", "pass"}
+     *     requirements = {"email", "password"}
      * )
      * @View(serializerGroups={"auth"})
      */
     public function usersAuthAction(Request $request)
     {   
         $email = $request->get('email');
-        
-        $password = $request->get('pass');
+
+        $checkpass = new PRFCYcheckPass64();
+
+        $password = $checkpass->decodePass64( $request->get('password') );
 
         $em = $this->getDoctrine()->getManager();
 
-        $authservice =  new PRFCYAuthenticate($em, $this->container);
+        $authservice =  new PRFCYAuthenticate( $em, $this->container );
 
-        $authtoken = $authservice->authenticate($email, $password);
+        $authtoken = $authservice->authenticate( $email, $password );
 
         $view = $this->view( $authtoken  );
 
@@ -152,12 +159,12 @@ class UserController extends FOSRestController
 
     /**
      * @Get(
-     *     path = "/users/{id}",
+     *     path = "/users/id/{id}",
      *     name = "get_user",
      *     requirements = {"id"="\d+"}
      * )
      */
-    public function getUserByIdAction($id, Request $request)
+    public function getUserByIdAction(Request $request)
     {
         $checkauth = new PRFCYAuthCheck ($this->container);
 
@@ -168,18 +175,27 @@ class UserController extends FOSRestController
             return $authenticationErrorResponse;
         }
 
+        $id = $request->get('id');
+
         $users = $this->getDoctrine()->getRepository('App:User')->findById($id);
 
-        $data = array(
+        if($users) {
 
-            "id" => $users[0]->getId(),
+            $data = array(
 
-            "username" => $users[0]->getUsername(),
+                "id" => $users[0]->getId(),
 
-            "mail" => $users[0]->getEmail(),
-        );
+                "username" => $users[0]->getUsername(),
 
-        $view = $this->view( $data );
+                "mail" => $users[0]->getEmail(),
+            );
+
+            $view = $this->view( $data );
+
+            return $this->handleView($view);
+        }
+
+        $view = $this->view( $users );
 
         return $this->handleView($view);
     }
@@ -188,7 +204,7 @@ class UserController extends FOSRestController
 
     /**
      * @Get(
-     *     path = "/users/{mail}",
+     *     path = "/users/mail/{mail}",
      *     name = "get_user",
      *     requirements = {"mail"}
      * )
@@ -208,24 +224,32 @@ class UserController extends FOSRestController
 
         $users = $this->getDoctrine()->getRepository('App:User')->findByEmail($mail);
 
-        $data = array(
+        if($users) {
 
-            "id" => $users[0]->getId(),
+            $data = array(
 
-            "username" => $users[0]->getUsername(),
+                "id" => $users[0]->getId(),
 
-            "mail" => $users[0]->getEmail(),
-        );
+                "username" => $users[0]->getUsername(),
 
-        $view = $this->view( $data );
+                "mail" => $users[0]->getEmail(),
+            );
+
+            $view = $this->view( $data );
+
+            return $this->handleView($view);
+        }
+
+        $view = $this->view( array("unknow id") );
 
         return $this->handleView($view);
+
     }
 
 
 
      /**
-     * @Get(
+     * @Put(
      *     path = "/users/edit/mail/{mail}/{newmail}/{password}",
      *     name = "edit_mail",
      *     requirements = {"mail", "newmail"}
@@ -233,6 +257,10 @@ class UserController extends FOSRestController
      */
     public function editMailProfileAction(Request $request)
     {
+         # Checking user by fos
+
+       
+
         $checkauth = new PRFCYAuthCheck ($this->container);
 
         $authenticationErrorResponse = $checkauth->checkAuthAndGetErrorResponse($request);
@@ -242,29 +270,29 @@ class UserController extends FOSRestController
             return $authenticationErrorResponse;
         }
 
-        $password = $request->get('password');
+        $checkpass = new PRFCYcheckPass64();
+
+        $password = $checkpass->decodePass64($request->get('password'));
 
         $oldmail = $request->get('mail');
         
         $newmail = $request->get('newmail');
         
-        # Checking user by fos
-
         $user_manager = $this->get('fos_user.user_manager');
-        
-        $factory = $this->get('security.encoder_factory');
-
-        # Check 1: on email
 
         $user = $user_manager->findUserByEmail($oldmail);
-        
-        $encoder = $factory->getEncoder($user);
-        
-        $salt = $user->getSalt();
-
-        # Check 2: on password
 
         if($user) {
+
+            # Check 1: on email
+            
+            $factory = $this->get('security.encoder_factory');
+            
+            $encoder = $factory->getEncoder($user);
+            
+            $salt = $user->getSalt();
+
+            # Check 2: on password
 
             if( $encoder->isPasswordValid($user->getPassword(), $password, $salt) ) {
                 
@@ -286,7 +314,7 @@ class UserController extends FOSRestController
             }
         }
 
-        $view = $this->view(array('edited'=>'error'));
+        $view = $this->view(array('edited'=>'error: unknow user'));
 
         return $this->handleView($view);
     }
@@ -294,7 +322,7 @@ class UserController extends FOSRestController
 
 
      /**
-     * @Get(
+     * @Put(
      *     path = "/users/edit/password/{mail}/{password}/{newpassword}/{confirmpassword}",
      *     name = "edit_password",
      *     requirements = {"mail","password","newpassword","confirmpassword"}
@@ -314,11 +342,13 @@ class UserController extends FOSRestController
 
         $mail = $request->get('mail');
         
-        $password = $request->get('password');
+        $checkpass = new PRFCYcheckPass64();
+
+        $password = $checkpass->decodePass64($request->get('password'));
         
-        $newpassword = $request->get('newpassword');
+        $newpassword = $checkpass->decodePass64($request->get('newpassword'));
         
-        $confirmpassword = $request->get('confirmpassword');
+        $confirmpassword = $checkpass->decodePass64($request->get('confirmpassword'));
         
         # Checking user by fos
 
@@ -329,14 +359,14 @@ class UserController extends FOSRestController
         # Check 1: on email
 
         $user = $user_manager->findUserByEmail($mail);
-        
-        $encoder = $factory->getEncoder($user);
-        
-        $salt = $user->getSalt();
-
-        # Check 2: on password
 
         if($user) {
+
+            $encoder = $factory->getEncoder($user);
+            
+            $salt = $user->getSalt();
+
+            # Check 2: on password
 
             if( $encoder->isPasswordValid($user->getPassword(), $password, $salt) ) {
                     

@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+<h1>Authentification User Documentation</h1>
+
+
+<h3 style='text-decoration:underline'>
+	1 - Envoi d'une requête d'authentification d'un utilisateur
+</h3>
+
+<h4>
+	Pour s' authentifier il faut envoyer une requête contenant son mail et son password 
+	<em>(* encodé ! Voir: <a href="../doc/register#chap2">Password</a>)</em>
+</h4>
+
+Elle doit être envoyée vers l'api sous la forme:
+
+<pre>http://localhost/core_api/public/users/new/{email}/{password}</pre>
+
+comme ceci: 
+<br>
+
+ http://s.wbrm/core_api/public/users/auth/monmail@mail.mail/eyJwYXNzd29yZCI6InJlZDFwYXNzIiwiYXBwIjoicHJmY3kifQ==
+
+
+<h3 style='text-decoration:underline' id="chap2">
+2 - Réception de la requête d' authentification
+</h3>
+
+<h4>
+	La requête va être récupérée dans le UserController:authUsersAction().
+</h4>
+
+...
+
+<br><br>
+*<strong> Il faudra donc par la suite utiliser le JWT pour effectuer toutes nos requêtes.</strong>
+<br><br><br>
+
+
+
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+<h1>Register User Documentation</h1>
+
+
+<h3 style='text-decoration:underline'>
+	1 - Envoi d'une requête d'enregistrement d'un nouvel utilisateur
+</h3>
+
+<h4>
+	Pour enregistrer un User il faut envoyer une requête contenant l'email, le username et le password de l'utilisateur.
+</h4>
+
+Elle doit être envoyée vers l'api sous la forme:
+
+<pre>http://localhost/core_api/public/users/new/{email}/{username}/{password}/{role}</pre>
+
+<h3 style='text-decoration:underline' id="chap2">
+2 - Le password
+</h3>
+
+Le {password} doit être sous la forme d'un objet JSON :
+
+<pre>var myjsobj = {"password":"monpassword", "app":"prfcy"};</pre>
+
+Puis encodé en Base64 :
+
+<br>	
+
+<em>* En Javascript :</em>
+
+<pre>	
+function utf8_to_b64( str ) {
+
+  return window.btoa(unescape(encodeURIComponent( str )));
+}
+
+var password = utf8_to_b64(JSON.stringify(myjsobj)); 
+
+// (return eyJwYXNzd29yZCI6Im1vbnBhc3N3b3JkIiwiYXBwIjoicHJmY3kifQ==)<br>
+</pre>
+
+Et envoyé dans la requête:
+<br>
+
+ http://s.wbrm/core_api/public/users/new/monmail@mail.mail/mon_username/eyJwYXNzd29yZCI6InJlZDFwYXNzIiwiYXBwIjoicHJmY3kifQ==/1 
+
+<h3 style='text-decoration:underline' id="chap2">
+3 - le rôle de l'utilisateur
+</h3>
+
+<p> le rôle de l'utilisateur se définit par la dernière variable de la requête. <p>
+	<em>.../users/new/monmail@mail.mail/mon_username/eyJwYXNzd29yZCI6InJlZDFwYXNzIiwiYXBwIjoicHJmY3kifQ==/<strong>1</strong></em>
+<ul>
+	<li> 0 = USER </li>
+	<li> 1 = ADMIN USER </li>
+	<li> 2 = SUPERADMIN & ADMIN </li>
+</ul>
+
+
+<h3 style='text-decoration:underline' id="chap2">
+4 - Réception de la requête
+</h3>
+
+<h4>
+	La requête va être récupérée dans le UserController:newUsersAction().
+</h4>
+
+Cette fonction va elle même charger les class PRFCYcheckPass64 et PRFCYRegisterUser.
+
+<ul>
+	<li>
+		La class PRFCYcheckPass64 va appeler la function decodePass64($password) qui va nous permettre de décoder le password reçus.
+	</li>
+	<li>
+		La class PRFCYRegisterUser va appeler la function registerUser() qui va nous permettre d'enregistrer l'utilisateur.
+		<ul><li>
+			Cette méthode registerUser() implémente la class PRFCYCreateClientId qui va energistrer un "client_id" pour les authentifications avec FriendsOfSymfony/FOSOAuthServerBundle et le JWT.
+		</li></ul>
+	</li>
+</ul>
+
+<br>
+*<strong> Il faudra donc par la suite utiliser le JWT pour effectuer toutes nos requêtes.</strong>
+<br><br><br>
+
+
+
+{% endblock %}

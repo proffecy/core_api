@@ -4,7 +4,6 @@ namespace App\Services;
 use Doctrine\ORM\EntityManager;
 use App\Entity\User;
 use App\Entity\Client;
-use App\Entity\Human;
 use App\Services\PRFCYCreateClientId;
 
 class PRFCYRegisterUser
@@ -22,7 +21,7 @@ class PRFCYRegisterUser
 	*
 	* @param string $email 
 	* @param string $username 
-	* @param string $roles
+	* @param string $password
 	* @param string $roles
 	*
 	*/
@@ -38,8 +37,6 @@ class PRFCYRegisterUser
         }
         
         $user = new User();
-
-        $human = new Human();
 
         switch($roles) {
             
@@ -75,6 +72,11 @@ class PRFCYRegisterUser
         $arrayinfo =  array('id' => $user_id,  'user'=>$username,'email'=>$email, 'registred'=>true, 'client_reponse'=>$createClientIdresponse);
 
         return $arrayinfo;
-
     }
+
+
+
+    
+
+    
 }
