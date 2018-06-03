@@ -27,9 +27,8 @@ class PRFCYUserCheck
 	* @param string $password
 	*
 	*/
-    public function userCheck($email, $username, $password)
+    public function userCheck($email, $password)
     {
-       
         $user_manager = $this->container->get('fos_user.user_manager');
         
         $factory = $this->container->get('security.encoder_factory');
@@ -46,8 +45,6 @@ class PRFCYUserCheck
 
             # Check 2: on password ---
 
-
-
             if( $encoder->isPasswordValid($user->getPassword(), $password, $salt) ) {
 
                 $userid = $user->getId();
@@ -60,14 +57,6 @@ class PRFCYUserCheck
 
         return false;
     }
-
-
-    public function decodePass64($password) {
-    	
-	    $obj = base64_decode($password);
-	    $password = (array)json_decode($obj);
-	    return $password['password'];
-	}
 
 }
    

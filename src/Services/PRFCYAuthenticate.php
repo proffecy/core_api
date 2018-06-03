@@ -3,6 +3,7 @@ namespace App\Services;
 
 use App\Entity\User;
 use Doctrine\ORM\EntityManager;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class PRFCYAuthenticate
@@ -96,9 +97,9 @@ class PRFCYAuthenticate
 	            	return $token;
 	            }
 	            
-	            $view = $this->view(array("error"=>"no client_id"));
+	            $response =  array("error"=>"no client_id");
 
-            	return $this->handleView($view);
+            	return $response;
         	}
 
         } else {

@@ -25,6 +25,7 @@ use App\Entity\User;
 use App\Entity\Client;
 use App\Entity\AccessToken;
 use App\Services\PRFCYAuthCheck;
+use App\Services\PRFCYcheckRoles;
 use App\Services\PRFCYcheckPass64;
 use App\Services\PRFCYRegisterUser;
 use App\Services\PRFCYAuthenticate;
@@ -107,7 +108,6 @@ class UserController extends FOSRestController
      */
     public function checkRolesAction(Request $request)
     {
-
         $checkauth = new PRFCYAuthCheck ($this->container);
 
         $authenticationErrorResponse = $checkauth->checkAuthAndGetErrorResponse($request);
@@ -117,7 +117,13 @@ class UserController extends FOSRestController
             return $authenticationErrorResponse;
         }
         
-        switch( $this->userRolesChecking($request) ) {
+        $em = $this->getDoctrine()->getManager();
+        
+        $checkroles = new PRFCYcheckRoles($em, $this->container);
+
+        $roles = $checkroles->userRolesChecking($request);
+        
+        switch( $roles ) {
 
             case "superadmin" : $view = $this->view( array('roles'=>'superadmin') ); return $this->handleView($view); break;
 
@@ -128,30 +134,6 @@ class UserController extends FOSRestController
             case "anonym" : $view = $this->view( array('roles'=>'anonym') ); return $this->handleView($view); break;
             
             default: break;
-        }
-    }
-
-   
-
-    private function userRolesChecking($request)
-    {
-        $roles = $this->getUserRoles($request);
-
-        if(in_array('ROLE_SUPER_ADMIN', $roles)) {
-
-            return 'superadmin';
-
-        } elseif(in_array('ROLE_ADMIN', $roles)) {
-
-            return 'admin';
-
-        } elseif(in_array('ROLE_USER', $roles)) {
-
-            return 'user';
-
-        } else {
-
-            return 'anonym';
         }
     }
 
@@ -258,8 +240,6 @@ class UserController extends FOSRestController
     public function editMailProfileAction(Request $request)
     {
          # Checking user by fos
-
-       
 
         $checkauth = new PRFCYAuthCheck ($this->container);
 
@@ -463,30 +443,6 @@ class UserController extends FOSRestController
 
 
 
-    private function getUserRoles($request) {
-
-        $bearer_token = $this->get('fos_oauth_server.server')->getBearerToken($request);
-       
-        $em = $this->getDoctrine()->getManager();
-        
-        // select user_id from oauth2_access_tokens where token='$bearer_token'
-
-        $userid = $em->getRepository("App:AccessToken")->createQueryBuilder('at')
-        
-               ->Where('at.token LIKE :token')
-        
-               ->setParameter('token', $bearer_token)
-        
-               ->getQuery()
-        
-               ->getResult();
-
-        
-        $roles = $userid[0]->getUser()->getRoles();
-
-        return $roles;
-        
-    }
 
 
 

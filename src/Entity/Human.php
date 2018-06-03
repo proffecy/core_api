@@ -20,14 +20,14 @@ class Human
     private $id;
 
     /**
-     * @ORM\Column(type="string", length=100)
+     * @ORM\Column(type="string", length=100, nullable=true)
      *
      * @Groups({"detail", "list"})
      */
     private $firstname;
 
     /**
-     * @ORM\Column(type="string", length=100)
+     * @ORM\Column(type="string", length=100, nullable=true)
      *
      * @Groups({"detail", "list"})
      */
@@ -35,7 +35,7 @@ class Human
 
 
      /**
-     * @ORM\Column(type="string", length=100)
+     * @ORM\Column(type="string", length=100, nullable=true)
      *
      * @Groups({"detail", "list"})
      */
@@ -49,7 +49,7 @@ class Human
     private $organisation_definition;
 
     /**
-     * @ORM\Column(type="boolean")
+     * @ORM\Column(type="boolean", nullable=true)
      *
      * @Groups({"detail", "list"})
      */
@@ -63,7 +63,7 @@ class Human
     private $user_id;
 
      /**
-     * @ORM\Column(type="integer", length=11)
+     * @ORM\Column(type="integer", length=11, nullable=true)
      *
      * @Groups({"detail", "list"})
      */
@@ -94,35 +94,35 @@ class Human
     private $mail;
 
     /**
-     * @ORM\Column(type="string", length=16)
+     * @ORM\Column(type="string", length=16, nullable=true)
      *
      * @Groups({"detail", "list"})
      */
     private $phone;
 
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=true)
      *
      * @Groups({"detail", "list"})
      */
     private $fullstreet;
 
     /**
-     * @ORM\Column(type="integer", length=6)
+     * @ORM\Column(type="integer", length=6, nullable=true)
      *
      * @Groups({"detail", "list"})
      */
     private $postcode;
 
     /**
-     * @ORM\Column(type="string", length=100)
+     * @ORM\Column(type="string", length=100, nullable=true)
      *
      * @Groups({"detail", "list"})
      */
     private $town;
 
     /**
-     * @ORM\Column(type="string", length=100)
+     * @ORM\Column(type="string", length=100, nullable=true)
      *
      * @Groups({"detail", "list"})
      */
@@ -165,7 +165,7 @@ class Human
         return $this->organisation_name;
     }
 
-    public function setOrganisation_name($organisation_name)
+    public function setOrganisationName($organisation_name)
     {
         $this->organisation_name = $organisation_name;
 
@@ -220,14 +220,14 @@ class Human
         return $this;
     }
 
-    public function getRole()
+    public function getRoles()
     {
-        return $this->role;
+        return $this->roles;
     }
 
-    public function setRole($role)
+    public function setRoles($roles)
     {
-        $this->role = $role;
+        $this->roles = $roles;
 
         return $this;
     }
