@@ -6,7 +6,7 @@ fos_rest:
     format_listener:
         rules:
             - { path: '^/home', priorities: ['html'], fallback_format: 'html' }
-            - { path: '^/doc', priorities: ['html'], fallback_format: 'html' }
+            - { path: '^/dev/doc', priorities: ['html'], fallback_format: 'html' }
             - { path: '^/', priorities: ['json'], fallback_format: 'json' }                # will eventually be JSON formated
             # setting fallback_format to json means that instead of considering the next rule in case of a priority mismatch, json will be used
             #- { path: '^/', host: 's.wbrm', priorities: ['json', 'html'], fallback_format: json, prefer_extension: false }
